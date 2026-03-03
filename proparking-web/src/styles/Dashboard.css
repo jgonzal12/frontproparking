@@ -1,14 +1,18 @@
-/* Contenedor principal de toda la pantalla */
+/* ==========================================================================
+   DASHBOARD GLOBAL STYLES (CLIENTE & ADMIN)
+   ========================================================================== */
+
+/* Contenedor principal */
 .dashboard-layout {
     min-height: 100vh;
-    background-color: var(--bg-color);
+    background-color: #f8fafc;
     display: flex;
     flex-direction: column;
 }
 
-/* Barra de navegación superior */
+/* Barra de navegación */
 .navbar {
-    background-color: var(--white);
+    background-color: white;
     padding: 15px 30px;
     display: flex;
     justify-content: space-between;
@@ -19,8 +23,20 @@
 
 .navbar-brand h1 {
     margin: 0;
-    color: var(--primary-color);
+    color: #2563eb;
     font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-tag {
+    font-size: 12px;
+    background-color: #fef08a;
+    color: #854d0e;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
 }
 
 .navbar-user {
@@ -32,7 +48,7 @@
 .user-role {
     font-size: 12px;
     background-color: #e0e7ff;
-    color: var(--primary-color);
+    color: #2563eb;
     padding: 4px 8px;
     border-radius: 12px;
     font-weight: 600;
@@ -40,20 +56,20 @@
 
 .btn-logout {
     background-color: #fee2e2;
-    color: var(--error-color);
+    color: #dc2626;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .btn-logout:hover {
-    background-color: #fca5a5;
+    background-color: #fecaca;
 }
 
-/* Área de contenido principal */
+/* Contenido Principal */
 .dashboard-content {
     padding: 30px;
     max-width: 1200px;
@@ -62,7 +78,6 @@
     box-sizing: border-box;
 }
 
-/* Tarjetas de información (Widgets) */
 .widget-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -71,7 +86,7 @@
 }
 
 .widget-card {
-    background-color: var(--white);
+    background-color: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -80,20 +95,159 @@
 
 .widget-card h3 {
     margin-top: 0;
-    color: var(--text-dark);
+    margin-bottom: 15px;
+    color: #1e293b;
+    font-size: 18px;
 }
 
-/* Estilos para el Modal de Agregar Vehículo */
+/* ==========================================================================
+   ADMIN SPECIFIC STYLES
+   ========================================================================== */
+
+/* Badge de conteo */
+.badge-count {
+    background-color: #dbeafe;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Tabla de Gestión */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.admin-table th {
+    text-align: left;
+    padding: 12px 8px;
+    color: #64748b;
+    font-size: 13px;
+    text-transform: uppercase;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.admin-table td {
+    padding: 15px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+}
+
+/* Botón de Salida */
+.btn-action-exit {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-action-exit:hover {
+    background-color: #dc2626;
+}
+
+/* Gestión de Tarifas */
+.tarifas-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tarifa-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.tarifa-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.tarifa-label {
+    font-weight: bold;
+    color: #475569;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.tarifa-value {
+    color: #059669;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.input-inline {
+    width: 100px;
+    padding: 8px;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    font-size: 16px;
+    outline: none;
+}
+
+.tarifa-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-save, .btn-cancel {
+    background: none;
+    border: 1px solid #e2e8f0;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Estilos de Modal y Formularios */
+.full-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    font-size: 14px;
+}
+
+.resumen-pago {
+    background-color: #f1f5f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2563eb;
+}
+
+.resumen-pago p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Reutilización de modales previos */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     z-index: 1000;
 }
 
@@ -101,39 +255,10 @@
     background-color: white;
     padding: 30px;
     border-radius: 10px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.modal-content h3 {
-    margin-top: 0;
-    color: var(--primary-color);
-    margin-bottom: 20px;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 .form-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.btn-secondary {
-    flex: 1;
-    background-color: #f1f5f9;
-    color: #475569;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-secondary:hover {
-    background-color: #e2e8f0;
-}
-
-.form-actions .btn-primary {
-    flex: 1;
-    margin-top: 0;
+    display: flex; gap: 10px; margin-top: 20px;
 }

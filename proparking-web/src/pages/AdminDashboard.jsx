@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { obtenerTodosLosIngresos } from '../services/ingresoService';
 import { registrarSalida } from '../services/pagoService';
+import { obtenerTarifas, actualizarTarifa } from '../services/tarifaService';
 import '../styles/Dashboard.css';
 
 function AdminDashboard() {
@@ -9,29 +10,40 @@ function AdminDashboard() {
     const nombre = localStorage.getItem('nombre') || 'Administrador';
     const rol = localStorage.getItem('rol') || 'ADMIN';
 
+    // Estados de Datos
     const [ingresos, setIngresos] = useState([]);
+    const [tarifas, setTarifas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
 
-    // Estado para el Modal de Cobro
+    // Estados para Modal de Pago/Salida
     const [mostrarModalPago, setMostrarModalPago] = useState(false);
     const [ingresoSeleccionado, setIngresoSeleccionado] = useState(null);
-    const [metodoPago, setMetodoPago] = useState('EFECTIVO'); // 🔹 Asegúrate de que coincida con tu Enum MetodoPago
+    const [metodoPago, setMetodoPago] = useState('EFECTIVO');
 
-    const cargarIngresos = async () => {
+    // Estados para Gestión de Tarifas
+    const [editandoTarifa, setEditandoTarifa] = useState(null);
+    const [nuevoValorTarifa, setNuevoValorTarifa] = useState('');
+
+    const cargarDatos = async () => {
         try {
             setCargando(true);
-            const data = await obtenerTodosLosIngresos();
-            setIngresos(data);
+            const [dataIngresos, dataTarifas] = await Promise.all([
+                obtenerTodosLosIngresos(),
+                obtenerTarifas()
+            ]);
+            setIngresos(dataIngresos);
+            setTarifas(dataTarifas);
         } catch (err) {
-            setError(err);
+            setError('Error al cargar la información del sistema');
+            console.error(err);
         } finally {
             setCargando(false);
         }
     };
 
     useEffect(() => {
-        cargarIngresos();
+        cargarDatos();
     }, []);
 
     const handleLogout = () => {
@@ -39,7 +51,7 @@ function AdminDashboard() {
         navigate('/login');
     };
 
-    // Abre la ventanita para elegir cómo va a pagar
+    // --- Lógica de Salida y Pago ---
     const abrirModalCobro = (ingreso) => {
         setIngresoSeleccionado(ingreso);
         setMostrarModalPago(true);
@@ -49,67 +61,77 @@ function AdminDashboard() {
         e.preventDefault();
         try {
             await registrarSalida(ingresoSeleccionado.id, metodoPago);
-            alert("¡Salida y pago registrados con éxito!");
+            alert("Salida registrada y pago procesado con éxito");
             setMostrarModalPago(false);
             setIngresoSeleccionado(null);
-            cargarIngresos(); // Recargamos para que el vehículo desaparezca de "Activos"
+            cargarDatos(); // Recargar ingresos y cualquier cambio
         } catch (err) {
-            alert("Error al cobrar: " + err);
+            alert("Error al procesar salida: " + err);
         }
     };
 
-    // Filtramos para mostrar solo los que siguen adentro del parqueadero
+    // --- Lógica de Tarifas ---
+    const handleGuardarTarifa = async (id) => {
+        try {
+            await actualizarTarifa(id, nuevoValorTarifa);
+            setEditandoTarifa(null);
+            cargarDatos();
+            alert("Tarifa actualizada");
+        } catch (err) {
+            alert("Error al actualizar tarifa: " + err);
+        }
+    };
+
+    // Filtro de vehículos actualmente en el sitio
     const ingresosActivos = ingresos.filter(i => i.estado === 'ACTIVO');
-    const ingresosFinalizados = ingresos.filter(i => i.estado === 'FINALIZADO');
 
     return (
         <div className="dashboard-layout">
             <nav className="navbar">
                 <div className="navbar-brand">
-                    <h1>ProParking <span style={{ color: '#64748b', fontSize: '16px' }}>| Panel de Control</span></h1>
+                    <h1>ProParking <span className="admin-tag">Admin</span></h1>
                 </div>
                 <div className="navbar-user">
                     <span>Hola, <strong>{nombre}</strong></span>
-                    <span className="user-role" style={{ backgroundColor: '#fef08a', color: '#854d0e' }}>{rol}</span>
+                    <span className="user-role">{rol}</span>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>
 
             <main className="dashboard-content">
-                <h2>Gestión del Parqueadero</h2>
-                
-                {cargando ? <p>Cargando información del parqueadero...</p> : error ? <p style={{color:'red'}}>{error}</p> : (
+                <h2>Gestión Operativa</h2>
+
+                {cargando ? <p>Sincronizando con el servidor...</p> : (
                     <div className="widget-grid">
-                        
-                        {/* WIDGET 1: Vehículos Activos (Adentro) */}
+
+                        {/* WIDGET 1: VEHÍCULOS ACTIVOS */}
                         <div className="widget-card" style={{ gridColumn: 'span 2' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <h3>Vehículos en Parqueadero</h3>
-                                <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', padding: '5px 10px', borderRadius: '15px', fontWeight: 'bold' }}>
-                                    Total: {ingresosActivos.length}
-                                </span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                                <h3>Vehículos en el Parqueadero</h3>
+                                <span className="badge-count">{ingresosActivos.length} activos</span>
                             </div>
-                            
-                            {ingresosActivos.length === 0 ? <p>No hay vehículos estacionados en este momento.</p> : (
-                                <table style={{ width: '100%', textAlign: 'left', marginTop: '15px', borderCollapse: 'collapse' }}>
+
+                            {ingresosActivos.length === 0 ? (
+                                <p>No hay vehículos registrados en este momento.</p>
+                            ) : (
+                                <table className="admin-table">
                                     <thead>
-                                        <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>
-                                            <th style={{ padding: '10px 0' }}>Placa</th>
-                                            <th>Vehículo</th>
-                                            <th>Hora Entrada</th>
+                                        <tr>
+                                            <th>Placa</th>
+                                            <th>Tipo</th>
+                                            <th>Ingreso</th>
                                             <th>Acción</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {ingresosActivos.map(ingreso => (
-                                            <tr key={ingreso.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                <td style={{ padding: '15px 0', fontWeight: 'bold' }}>{ingreso.vehiculo.placa}</td>
+                                            <tr key={ingreso.id}>
+                                                <td><strong>{ingreso.vehiculo.placa}</strong></td>
                                                 <td>{ingreso.vehiculo.tipoVehiculo}</td>
                                                 <td>{new Date(ingreso.fechaEntrada).toLocaleTimeString()}</td>
                                                 <td>
-                                                    <button 
-                                                        className="btn-solid" 
-                                                        style={{ backgroundColor: '#ef4444', border: 'none', padding: '6px 12px' }}
+                                                    <button
+                                                        className="btn-action-exit"
                                                         onClick={() => abrirModalCobro(ingreso)}
                                                     >
                                                         Registrar Salida
@@ -121,37 +143,80 @@ function AdminDashboard() {
                                 </table>
                             )}
                         </div>
+
+                        {/* WIDGET 2: GESTIÓN DE TARIFAS */}
+                        <div className="widget-card">
+                            <h3>Tarifas por Hora</h3>
+                            <div className="tarifas-container" style={{ marginTop: '15px' }}>
+                                {tarifas.map(t => (
+                                    <div key={t.id} className="tarifa-item">
+                                        <div className="tarifa-info">
+                                            <span className="tarifa-label">{t.tipoVehiculo}</span>
+                                            {editandoTarifa === t.id ? (
+                                                <input
+                                                    type="number"
+                                                    className="input-inline"
+                                                    value={nuevoValorTarifa}
+                                                    onChange={(e) => setNuevoValorTarifa(e.target.value)}
+                                                />
+                                            ) : (
+                                                <span className="tarifa-value">${t.valorPorHora}</span>
+                                            )}
+                                        </div>
+                                        <div className="tarifa-actions">
+                                            {editandoTarifa === t.id ? (
+                                                <>
+                                                    <button className="btn-save" onClick={() => handleGuardarTarifa(t.id)}>💾</button>
+                                                    <button className="btn-cancel" onClick={() => setEditandoTarifa(null)}>✖</button>
+                                                </>
+                                            ) : (
+                                                <button
+                                                    className="btn-edit"
+                                                    onClick={() => {
+                                                        setEditandoTarifa(t.id);
+                                                        setNuevoValorTarifa(t.valorPorHora);
+                                                    }}
+                                                >
+                                                    Editar
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
                     </div>
                 )}
             </main>
 
-            {/* MODAL DE COBRO */}
+            {/* MODAL DE SALIDA Y PAGO */}
             {mostrarModalPago && (
                 <div className="modal-overlay">
                     <div className="modal-content">
-                        <h3>Registrar Salida y Cobro</h3>
-                        <p>Vehículo: <strong>{ingresoSeleccionado?.vehiculo.placa}</strong></p>
-                        <p>Entrada: {new Date(ingresoSeleccionado?.fechaEntrada).toLocaleString()}</p>
-                        
-                        <form onSubmit={handleProcesarSalida} style={{ marginTop: '20px' }}>
+                        <h3>Finalizar Estancia</h3>
+                        <div className="resumen-pago">
+                            <p>Vehículo: <strong>{ingresoSeleccionado?.vehiculo.placa}</strong></p>
+                            <p>Hora entrada: {new Date(ingresoSeleccionado?.fechaEntrada).toLocaleTimeString()}</p>
+                        </div>
+
+                        <form onSubmit={handleProcesarSalida}>
                             <div className="form-group">
                                 <label>Método de Pago</label>
-                                <select 
-                                    style={{ width: '100%', padding: '12px', borderRadius: '6px' }}
+                                <select
+                                    className="full-select"
                                     value={metodoPago}
                                     onChange={(e) => setMetodoPago(e.target.value)}
                                 >
-                                    {/* 🔹 Estos valores deben coincidir con el Enum MetodoPago de tu Java */}
                                     <option value="EFECTIVO">Efectivo</option>
-                                    <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
-                                    <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
-                                    <option value="TRANSFERENCIA_BANCARIA">Transferencia / Nequi</option>
+                                    <option value="TARJETA_DEBITO">Tarjeta Débito</option>
+                                    <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
+                                    <option value="TRANSFERENCIA">Transferencia / Nequi</option>
                                 </select>
                             </div>
-                            
                             <div className="form-actions">
                                 <button type="button" className="btn-secondary" onClick={() => setMostrarModalPago(false)}>Cancelar</button>
-                                <button type="submit" className="btn-primary" style={{ backgroundColor: '#22c55e' }}>Cobrar y Finalizar</button>
+                                <button type="submit" className="btn-primary">Confirmar y Cobrar</button>
                             </div>
                         </form>
                     </div>

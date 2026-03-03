@@ -11,14 +11,18 @@ export const obtenerMiHistorial = async () => {
 
 export const registrarIngreso = async (vehiculoId, parqueaderoId) => {
     try {
-        // Tu controlador de Java espera RequestParams, así que los pasamos en la URL
-        const response = await api.post(`/ingresos?vehiculoId=${vehiculoId}&parqueaderoId=${parqueaderoId}`);
+        const response = await api.post('/ingresos', null, {
+            params: {
+                vehiculoId: vehiculoId,
+                parqueaderoId: parqueaderoId
+            }
+        });
         return response.data;
     } catch (error) {
-        throw error.response?.data?.error || 'Error al registrar el ingreso';
+        // Esto ayudará a ver el mensaje exacto (ej: "No hay cupos") en el alert
+        throw error.response?.data?.error || 'Error en la petición';
     }
 };
-
 
 export const obtenerTodosLosIngresos = async () => {
     try {

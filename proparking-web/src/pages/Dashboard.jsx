@@ -87,14 +87,17 @@ function Dashboard() {
 
     // 🔹 Función de Ingresos
     const handleCrearIngreso = async (e) => {
-        e.preventDefault();
-        try {
-            await registrarIngreso(nuevoIngreso.vehiculoId, nuevoIngreso.parqueaderoId);
-            setMostrarModalIngreso(false);
-            setNuevoIngreso({ vehiculoId: '', parqueaderoId: '' });
-            cargarDatos(); // Recargamos para ver el nuevo ingreso en el historial
-        } catch (err) { alert("Error: " + err); }
-    };
+    e.preventDefault();
+    try {
+        await registrarIngreso(nuevoIngreso.vehiculoId, nuevoIngreso.parqueaderoId);
+        setMostrarModalIngreso(false);
+        setNuevoIngreso({ vehiculoId: '', parqueaderoId: '' });
+        cargarDatos(); 
+    } catch (err) { 
+        // 🔹 MODIFICACIÓN: Muestra el error real del backend
+        alert("Error al registrar: " + (err.response?.data?.error || err)); 
+    }
+};
 
     return (
         <div className="dashboard-layout">
