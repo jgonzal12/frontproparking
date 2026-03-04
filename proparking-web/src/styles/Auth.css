@@ -137,3 +137,13 @@ input:focus {
 .auth-footer a:hover {
     text-decoration: underline;
 }
+.success-msg {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 14px;
+    text-align: center;
+}

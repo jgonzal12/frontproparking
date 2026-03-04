@@ -11,7 +11,6 @@ export const registrarUsuario = async (datos) => {
 
 export const verificarCodigo = async (email, codigo) => {
     try {
-        // Corregido: era 'correo', el backend espera 'email'
         const response = await api.post('/auth/verificar', { email, codigo });
         return response.data;
     } catch (error) {
@@ -19,13 +18,29 @@ export const verificarCodigo = async (email, codigo) => {
     }
 };
 
-// login ya no guarda en localStorage directamente —
-// eso lo hace AuthContext.login() para mantener el estado centralizado
 export const iniciarSesion = async (email, password) => {
     try {
         const response = await api.post('/auth/login', { email, password });
         return response.data;
     } catch (error) {
         throw error.response?.data?.error || 'Credenciales incorrectas';
+    }
+};
+
+export const solicitarRecuperacion = async (email) => {
+    try {
+        const response = await api.post('/auth/recuperar', { email });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.error || 'Error al enviar el código';
+    }
+};
+
+export const restablecerPassword = async (email, codigo, nuevaPassword) => {
+    try {
+        const response = await api.post('/auth/restablecer', { email, codigo, nuevaPassword });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.error || 'Error al restablecer la contraseña';
     }
 };

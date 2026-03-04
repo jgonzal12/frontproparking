@@ -1,27 +1,28 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { iniciarSesion } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
 
 function Login() {
-    const [email, setEmail] = useState('');
+    const location = useLocation();
+    const [email, setEmail]       = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [error, setError]       = useState('');
     const [cargando, setCargando] = useState(false);
     const navigate = useNavigate();
     const { login } = useAuth();
+
+    // Mensaje que viene desde RestablecerPassword tras éxito
+    const mensajeExito = location.state?.mensaje;
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         setCargando(true);
-
         try {
             const data = await iniciarSesion(email, password);
-            // Guarda la sesión en el contexto (y en localStorage internamente)
             login(data);
-
             if (data.rol === 'ADMIN' || data.rol === 'SUPER_ADMIN') {
                 navigate('/admin-dashboard');
             } else {
@@ -39,6 +40,8 @@ function Login() {
             <div className="auth-card">
                 <h2>ProParking</h2>
                 <p>Ingresa tus credenciales para iniciar sesión</p>
+
+                {mensajeExito && <div className="success-msg">{mensajeExito}</div>}
 
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
@@ -68,6 +71,9 @@ function Login() {
 
                 {error && <div className="error-msg">{error}</div>}
 
+                <div className="auth-footer">
+                    <Link to="/recuperar-password">¿Olvidaste tu contraseña?</Link>
+                </div>
                 <div className="auth-footer">
                     ¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link>
                 </div>
