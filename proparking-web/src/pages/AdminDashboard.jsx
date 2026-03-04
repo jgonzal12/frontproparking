@@ -93,6 +93,7 @@ function AdminDashboard() {
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
+                    <button onClick={() => navigate("/reportes")} className="btn-logout" style={{ backgroundColor: "#1e40af", color: "white", marginRight: 8 }}>📊 Reportes</button>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>
@@ -210,7 +211,7 @@ function AdminDashboard() {
                                     <option value="EFECTIVO">Efectivo</option>
                                     <option value="TARJETA_DEBITO">Tarjeta Débito</option>
                                     <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
-                                    <option value="TRANSFERENCIA">Transferencia / Nequi</option>
+                                    <option value="TRANSFERENCIA_BANCARIA">Transferencia</option>
                                 </select>
                             </div>
                             <div className="form-actions">
