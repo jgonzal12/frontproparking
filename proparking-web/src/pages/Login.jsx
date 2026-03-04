@@ -1,30 +1,36 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { iniciarSesion } from '../services/authService';
-import '../styles/Auth.css'; // 🔹 Importamos los nuevos estilos
+import { useAuth } from '../context/AuthContext';
+import '../styles/Auth.css';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [cargando, setCargando] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError(''); // Limpiamos errores previos
+        setError('');
+        setCargando(true);
 
         try {
             const data = await iniciarSesion(email, password);
+            // Guarda la sesión en el contexto (y en localStorage internamente)
+            login(data);
 
-            // Dependiendo del rol, lo mandamos a un lugar distinto
             if (data.rol === 'ADMIN' || data.rol === 'SUPER_ADMIN') {
                 navigate('/admin-dashboard');
             } else {
-                navigate('/dashboard'); // Si es CLIENTE
+                navigate('/dashboard');
             }
-
         } catch (err) {
             setError(err);
+        } finally {
+            setCargando(false);
         }
     };
 
@@ -45,7 +51,6 @@ function Login() {
                             required
                         />
                     </div>
-
                     <div className="form-group">
                         <label>Contraseña</label>
                         <input
@@ -56,11 +61,11 @@ function Login() {
                             required
                         />
                     </div>
-
-                    <button type="submit" className="btn-primary">Entrar</button>
+                    <button type="submit" className="btn-primary" disabled={cargando}>
+                        {cargando ? 'Ingresando...' : 'Entrar'}
+                    </button>
                 </form>
 
-                {/* Mensaje de error con su propio estilo CSS */}
                 {error && <div className="error-msg">{error}</div>}
 
                 <div className="auth-footer">

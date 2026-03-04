@@ -11,21 +11,19 @@ export const registrarUsuario = async (datos) => {
 
 export const verificarCodigo = async (email, codigo) => {
     try {
-        const response = await api.post('/auth/verificar', { correo: email, codigo });
+        // Corregido: era 'correo', el backend espera 'email'
+        const response = await api.post('/auth/verificar', { email, codigo });
         return response.data;
     } catch (error) {
         throw error.response?.data?.error || 'Código inválido';
     }
 };
 
+// login ya no guarda en localStorage directamente —
+// eso lo hace AuthContext.login() para mantener el estado centralizado
 export const iniciarSesion = async (email, password) => {
     try {
         const response = await api.post('/auth/login', { email, password });
-        if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('rol', response.data.rol);
-            localStorage.setItem('nombre', response.data.nombre);
-        }
         return response.data;
     } catch (error) {
         throw error.response?.data?.error || 'Credenciales incorrectas';

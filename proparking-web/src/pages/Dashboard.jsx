@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { obtenerMisVehiculos, registrarVehiculo, eliminarVehiculo } from '../services/vehiculoService';
 import { obtenerParqueaderos } from '../services/parqueaderoService';
 import { obtenerMiHistorial, registrarIngreso } from '../services/ingresoService';
@@ -7,154 +8,140 @@ import '../styles/Dashboard.css';
 
 function Dashboard() {
     const navigate = useNavigate();
-    const nombre = localStorage.getItem('nombre') || 'Usuario';
-    const rol = localStorage.getItem('rol') || 'CLIENTE';
+    const { usuario, logout } = useAuth();
 
-    // 🔹 Estados de Datos
-    const [vehiculos, setVehiculos] = useState([]);
+    const [vehiculos, setVehiculos]       = useState([]);
     const [parqueaderos, setParqueaderos] = useState([]);
-    const [historial, setHistorial] = useState([]);
-    const [cargando, setCargando] = useState(true);
+    const [historial, setHistorial]       = useState([]);
+    const [cargando, setCargando]         = useState(true);
+    const [error, setError]               = useState('');
 
-    // 🔹 Estados de Modales
     const [mostrarModalVehiculo, setMostrarModalVehiculo] = useState(false);
-    const [mostrarModalIngreso, setMostrarModalIngreso] = useState(false);
+    const [mostrarModalIngreso, setMostrarModalIngreso]   = useState(false);
 
-    // 🔹 Formularios
     const [nuevoVehiculo, setNuevoVehiculo] = useState({ placa: '', marca: '', color: '', tipoVehiculo: 'CARRO' });
-    const [nuevoIngreso, setNuevoIngreso] = useState({ vehiculoId: '', parqueaderoId: '' });
+    const [nuevoIngreso, setNuevoIngreso]   = useState({ vehiculoId: '', parqueaderoId: '' });
 
-    // 🔹 Cargar toda la información al entrar
-    // 🔹 Cargar toda la información de forma independiente
     const cargarDatos = async () => {
         setCargando(true);
-
-        // 1. Cargar Vehículos
+        setError('');
         try {
-            const dataVehiculos = await obtenerMisVehiculos();
+            const [dataVehiculos, dataParqueaderos, dataHistorial] = await Promise.all([
+                obtenerMisVehiculos(),
+                obtenerParqueaderos(),
+                obtenerMiHistorial(),
+            ]);
             setVehiculos(dataVehiculos);
-        } catch (err) {
-            console.error("Error cargando vehículos:", err);
-        }
-
-        // 2. Cargar Parqueaderos
-        try {
-            const dataParqueaderos = await obtenerParqueaderos();
             setParqueaderos(dataParqueaderos);
-        } catch (err) {
-            console.error("Error cargando parqueaderos:", err);
-        }
-
-        // 3. Cargar Historial
-        try {
-            const dataHistorial = await obtenerMiHistorial();
             setHistorial(dataHistorial);
         } catch (err) {
-            console.error("Error cargando historial:", err);
+            setError('Error al cargar la información. ' + err);
+        } finally {
+            setCargando(false);
         }
-
-        setCargando(false);
     };
 
-    useEffect(() => {
-        cargarDatos();
-    }, []);
+    useEffect(() => { cargarDatos(); }, []);
 
-    const handleLogout = () => {
-        localStorage.clear();
-        navigate('/login');
-    };
+    const handleLogout = () => { logout(); navigate('/login'); };
 
-    // 🔹 Funciones de Vehículos
     const handleCrearVehiculo = async (e) => {
         e.preventDefault();
         try {
             await registrarVehiculo(nuevoVehiculo);
             setMostrarModalVehiculo(false);
-            setNuevoVehiculo({ placa: '', marca: '', color: '', tipoVehiculo: ' ' });
+            setNuevoVehiculo({ placa: '', marca: '', color: '', tipoVehiculo: 'CARRO' });
             cargarDatos();
-        } catch (err) { alert("Error: " + err); }
-    };
-
-    const handleBorrarVehiculo = async (id) => {
-        if (window.confirm('¿Estás seguro de eliminar este vehículo?')) {
-            try {
-                await eliminarVehiculo(id);
-                cargarDatos();
-            } catch (err) { alert("Error: " + err); }
+        } catch (err) {
+            setError('Error al registrar vehículo: ' + err);
         }
     };
 
-    // 🔹 Función de Ingresos
+    const handleBorrarVehiculo = async (id) => {
+        if (!window.confirm('¿Estás seguro de eliminar este vehículo?')) return;
+        try {
+            await eliminarVehiculo(id);
+            cargarDatos();
+        } catch (err) {
+            setError('Error al eliminar vehículo: ' + err);
+        }
+    };
+
     const handleCrearIngreso = async (e) => {
-    e.preventDefault();
-    try {
-        await registrarIngreso(nuevoIngreso.vehiculoId, nuevoIngreso.parqueaderoId);
-        setMostrarModalIngreso(false);
-        setNuevoIngreso({ vehiculoId: '', parqueaderoId: '' });
-        cargarDatos(); 
-    } catch (err) { 
-        // 🔹 MODIFICACIÓN: Muestra el error real del backend
-        alert("Error al registrar: " + (err.response?.data?.error || err)); 
-    }
-};
+        e.preventDefault();
+        try {
+            await registrarIngreso(nuevoIngreso.vehiculoId, nuevoIngreso.parqueaderoId);
+            setMostrarModalIngreso(false);
+            setNuevoIngreso({ vehiculoId: '', parqueaderoId: '' });
+            cargarDatos();
+        } catch (err) {
+            setError('Error al registrar entrada: ' + err);
+        }
+    };
 
     return (
         <div className="dashboard-layout">
             <nav className="navbar">
                 <div className="navbar-brand"><h1>ProParking</h1></div>
                 <div className="navbar-user">
-                    <span>Hola, <strong>{nombre}</strong></span>
-                    <span className="user-role">{rol}</span>
+                    <span>Hola, <strong>{usuario?.nombre}</strong></span>
+                    <span className="user-role">{usuario?.rol}</span>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>
 
             <main className="dashboard-content">
                 <h2>Panel de Cliente</h2>
-                
+
+                {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
+
                 {cargando ? <p>Cargando información...</p> : (
                     <div className="widget-grid">
-                        
+
                         {/* WIDGET 1: VEHÍCULOS */}
                         <div className="widget-card">
                             <h3>Mis Vehículos</h3>
                             {vehiculos.length === 0 ? <p>No tienes vehículos registrados.</p> : (
-                                <ul style={{ paddingLeft: '0', listStyle: 'none' }}>
-                                    {vehiculos.map((v) => (
-                                        <li key={v.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', padding: '10px', backgroundColor: '#f8fafc', borderRadius: '6px' }}>
+                                <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+                                    {vehiculos.map(v => (
+                                        <li key={v.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, padding: 10, backgroundColor: '#f8fafc', borderRadius: 6 }}>
                                             <div>
-                                                <strong>{v.placa}</strong> - {v.marca} ({v.color}) <br/>
-                                                <span style={{ fontSize: '12px', color: '#64748b' }}>{v.tipoVehiculo}</span>
+                                                <strong>{v.placa}</strong> — {v.marca} ({v.color})<br />
+                                                <span style={{ fontSize: 12, color: '#64748b' }}>{v.tipoVehiculo}</span>
                                             </div>
-                                            <button onClick={() => handleBorrarVehiculo(v.id)} style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: '18px' }}>
+                                            <button onClick={() => handleBorrarVehiculo(v.id)}
+                                                style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: 18 }}>
                                                 🗑️
                                             </button>
                                         </li>
                                     ))}
                                 </ul>
                             )}
-                            <button className="btn-primary" onClick={() => setMostrarModalVehiculo(true)}>+ Agregar Vehículo</button>
+                            <button className="btn-primary" onClick={() => setMostrarModalVehiculo(true)}>
+                                + Agregar Vehículo
+                            </button>
                         </div>
-                        
-                        {/* WIDGET 2: HISTORIAL E INGRESOS */}
+
+                        {/* WIDGET 2: HISTORIAL */}
                         <div className="widget-card">
                             <h3>Historial de Ingresos</h3>
                             {historial.length === 0 ? <p>No tienes actividad reciente.</p> : (
-                                <ul style={{ paddingLeft: '0', listStyle: 'none' }}>
-                                    {historial.map((h) => (
-                                        <li key={h.id} style={{ marginBottom: '10px', padding: '10px', borderLeft: `4px solid ${h.estado === 'ACTIVO' ? '#22c55e' : '#94a3b8'}`, backgroundColor: '#f8fafc' }}>
-                                            <strong>{h.parqueaderoNombre}</strong> - Placa: {h.placaVehiculo} <br/>
-                                            <span style={{ fontSize: '12px' }}>Entrada: {new Date(h.fechaEntrada).toLocaleString()}</span> <br/>
-                                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: h.estado === 'ACTIVO' ? '#22c55e' : '#64748b' }}>Estado: {h.estado}</span>
+                                <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+                                    {historial.map(h => (
+                                        <li key={h.id} style={{ marginBottom: 10, padding: 10, borderLeft: `4px solid ${h.estado === 'ACTIVO' ? '#22c55e' : '#94a3b8'}`, backgroundColor: '#f8fafc' }}>
+                                            <strong>{h.parqueaderoNombre}</strong> — Placa: {h.placaVehiculo}<br />
+                                            <span style={{ fontSize: 12 }}>Entrada: {new Date(h.fechaEntrada).toLocaleString()}</span><br />
+                                            <span style={{ fontSize: 12, fontWeight: 'bold', color: h.estado === 'ACTIVO' ? '#22c55e' : '#64748b' }}>
+                                                Estado: {h.estado}
+                                            </span>
                                         </li>
                                     ))}
                                 </ul>
                             )}
-                            {/* Solo permitimos registrar ingreso si el usuario tiene al menos un vehículo */}
                             {vehiculos.length > 0 && (
-                                <button className="btn-solid" style={{ width: '100%', marginTop: '10px', padding: '10px', backgroundColor: '#10b981', border: 'none', color: 'white', borderRadius: '6px', cursor: 'pointer' }} 
-                                        onClick={() => setMostrarModalIngreso(true)}>
+                                <button className="btn-solid"
+                                    style={{ width: '100%', marginTop: 10, padding: 10, backgroundColor: '#10b981', border: 'none', color: 'white', borderRadius: 6, cursor: 'pointer' }}
+                                    onClick={() => setMostrarModalIngreso(true)}>
                                     📍 Registrar Entrada a Parqueadero
                                 </button>
                             )}
@@ -164,24 +151,35 @@ function Dashboard() {
                 )}
             </main>
 
-            {/* MODAL 1: AGREGAR VEHÍCULO (El mismo de antes) */}
+            {/* MODAL: AGREGAR VEHÍCULO */}
             {mostrarModalVehiculo && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h3>Registrar Vehículo</h3>
                         <form onSubmit={handleCrearVehiculo}>
-                            <div className="form-group"><label>Placa</label><input type="text" required onChange={e => setNuevoVehiculo({...nuevoVehiculo, placa: e.target.value.toUpperCase()})} /></div>
-                            <div className="form-group"><label>Marca</label><input type="text" required onChange={e => setNuevoVehiculo({...nuevoVehiculo, marca: e.target.value})} /></div>
-                            <div className="form-group"><label>Color</label><input type="text" required onChange={e => setNuevoVehiculo({...nuevoVehiculo, color: e.target.value})} /></div>
+                            <div className="form-group"><label>Placa</label>
+                                <input type="text" required
+                                    onChange={e => setNuevoVehiculo({ ...nuevoVehiculo, placa: e.target.value.toUpperCase() })} />
+                            </div>
+                            <div className="form-group"><label>Marca</label>
+                                <input type="text" required
+                                    onChange={e => setNuevoVehiculo({ ...nuevoVehiculo, marca: e.target.value })} />
+                            </div>
+                            <div className="form-group"><label>Color</label>
+                                <input type="text" required
+                                    onChange={e => setNuevoVehiculo({ ...nuevoVehiculo, color: e.target.value })} />
+                            </div>
                             <div className="form-group">
                                 <label>Tipo de Vehículo</label>
-                                <select style={{ width: '100%', padding: '12px' }} onChange={e => setNuevoVehiculo({...nuevoVehiculo, tipoVehiculo: e.target.value})}>
+                                <select style={{ width: '100%', padding: 12 }}
+                                    onChange={e => setNuevoVehiculo({ ...nuevoVehiculo, tipoVehiculo: e.target.value })}>
                                     <option value="CARRO">Automóvil</option>
                                     <option value="MOTO">Motocicleta</option>
                                 </select>
                             </div>
                             <div className="form-actions">
-                                <button type="button" className="btn-secondary" onClick={() => setMostrarModalVehiculo(false)}>Cancelar</button>
+                                <button type="button" className="btn-secondary"
+                                    onClick={() => setMostrarModalVehiculo(false)}>Cancelar</button>
                                 <button type="submit" className="btn-primary">Guardar</button>
                             </div>
                         </form>
@@ -189,7 +187,7 @@ function Dashboard() {
                 </div>
             )}
 
-            {/* MODAL 2: REGISTRAR INGRESO */}
+            {/* MODAL: REGISTRAR INGRESO */}
             {mostrarModalIngreso && (
                 <div className="modal-overlay">
                     <div className="modal-content">
@@ -197,20 +195,27 @@ function Dashboard() {
                         <form onSubmit={handleCrearIngreso}>
                             <div className="form-group">
                                 <label>Selecciona tu Vehículo</label>
-                                <select required style={{ width: '100%', padding: '12px' }} onChange={e => setNuevoIngreso({...nuevoIngreso, vehiculoId: e.target.value})}>
+                                <select required style={{ width: '100%', padding: 12 }}
+                                    onChange={e => setNuevoIngreso({ ...nuevoIngreso, vehiculoId: e.target.value })}>
                                     <option value="">-- Elige un vehículo --</option>
-                                    {vehiculos.map(v => <option key={v.id} value={v.id}>{v.placa} - {v.marca}</option>)}
+                                    {vehiculos.map(v => <option key={v.id} value={v.id}>{v.placa} — {v.marca}</option>)}
                                 </select>
                             </div>
                             <div className="form-group">
                                 <label>Selecciona el Parqueadero</label>
-                                <select required style={{ width: '100%', padding: '12px' }} onChange={e => setNuevoIngreso({...nuevoIngreso, parqueaderoId: e.target.value})}>
+                                <select required style={{ width: '100%', padding: 12 }}
+                                    onChange={e => setNuevoIngreso({ ...nuevoIngreso, parqueaderoId: e.target.value })}>
                                     <option value="">-- Elige un parqueadero --</option>
-                                    {parqueaderos.map(p => <option key={p.id} value={p.id}>{p.nombre} (Cupos: {p.capacidadTotal})</option>)}
+                                    {parqueaderos.map(p => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.nombre} — Cupos disponibles: {p.espaciosDisponibles}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="form-actions">
-                                <button type="button" className="btn-secondary" onClick={() => setMostrarModalIngreso(false)}>Cancelar</button>
+                                <button type="button" className="btn-secondary"
+                                    onClick={() => setMostrarModalIngreso(false)}>Cancelar</button>
                                 <button type="submit" className="btn-primary">Confirmar Entrada</button>
                             </div>
                         </form>
