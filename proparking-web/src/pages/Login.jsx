@@ -13,7 +13,6 @@ function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
 
-    // Mensaje que viene desde RestablecerPassword tras éxito
     const mensajeExito = location.state?.mensaje;
 
     const handleLogin = async (e) => {
@@ -23,7 +22,10 @@ function Login() {
         try {
             const data = await iniciarSesion(email, password);
             login(data);
-            if (data.rol === 'ADMIN' || data.rol === 'SUPER_ADMIN') {
+
+            if (data.rol === 'SUPER_ADMIN') {
+                navigate('/superadmin-dashboard');
+            } else if (data.rol === 'ADMIN') {
                 navigate('/admin-dashboard');
             } else {
                 navigate('/dashboard');
@@ -46,23 +48,13 @@ function Login() {
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
                         <label>Correo Electrónico</label>
-                        <input
-                            type="email"
-                            placeholder="correo@ejemplo.com"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            required
-                        />
+                        <input type="email" placeholder="correo@ejemplo.com"
+                            value={email} onChange={e => setEmail(e.target.value)} required />
                     </div>
                     <div className="form-group">
                         <label>Contraseña</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            required
-                        />
+                        <input type="password" placeholder="••••••••"
+                            value={password} onChange={e => setPassword(e.target.value)} required />
                     </div>
                     <button type="submit" className="btn-primary" disabled={cargando}>
                         {cargando ? 'Ingresando...' : 'Entrar'}
