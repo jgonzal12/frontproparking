@@ -8,7 +8,7 @@ import {
 } from '../services/superAdminService';
 import '../styles/Dashboard.css';
 
-const parqueaderoVacio = { nombre: '', direccion: '', capacidadTotal: '', tarifaCarro: '', tarifaMoto: '' };
+const parqueaderoVacio = { nombre: '', direccion: '', capacidadTotal: '', tarifaCarro: '', tarifaMoto: '', latitud: '', longitud: '' };
 
 function SuperAdminDashboard() {
     const navigate = useNavigate();
@@ -73,6 +73,8 @@ function SuperAdminDashboard() {
             capacidadTotal: p.capacidadTotal,
             tarifaCarro:    p.tarifaCarro,
             tarifaMoto:     p.tarifaMoto,
+            latitud:        p.latitud  || '',
+            longitud:       p.longitud || '',
         });
         setMostrarModal(true);
     };
@@ -87,6 +89,8 @@ function SuperAdminDashboard() {
             capacidadTotal: Number(formParqueadero.capacidadTotal),
             tarifaCarro:    Number(formParqueadero.tarifaCarro),
             tarifaMoto:     Number(formParqueadero.tarifaMoto),
+            latitud:        formParqueadero.latitud  !== '' ? Number(formParqueadero.latitud)  : null,
+            longitud:       formParqueadero.longitud !== '' ? Number(formParqueadero.longitud) : null,
         };
         try {
             if (parqueaderoEditando) {
@@ -318,6 +322,18 @@ function SuperAdminDashboard() {
                                 <label>Tarifa Moto ($/hora)</label>
                                 <input type="number" min="1" required value={formParqueadero.tarifaMoto}
                                     onChange={e => setFormParqueadero({ ...formParqueadero, tarifaMoto: e.target.value })} />
+                            </div>
+                            <div className="form-group">
+                                <label>Latitud</label>
+                                <input type="number" step="any" placeholder="Ej: 4.7110"
+                                    value={formParqueadero.latitud}
+                                    onChange={e => setFormParqueadero({ ...formParqueadero, latitud: e.target.value })} />
+                            </div>
+                            <div className="form-group">
+                                <label>Longitud</label>
+                                <input type="number" step="any" placeholder="Ej: -74.0721"
+                                    value={formParqueadero.longitud}
+                                    onChange={e => setFormParqueadero({ ...formParqueadero, longitud: e.target.value })} />
                             </div>
                             <div className="form-actions">
                                 <button type="button" className="btn-secondary"
