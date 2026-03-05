@@ -11,19 +11,21 @@ function Dashboard() {
     const navigate = useNavigate();
     const { usuario, logout } = useAuth();
 
-    const [vehiculos, setVehiculos]       = useState([]);
+    const [vehiculos, setVehiculos] = useState([]);
     const [parqueaderos, setParqueaderos] = useState([]);
-    const [historial, setHistorial]       = useState([]);
-    const [cargando, setCargando]         = useState(true);
-    const [error, setError]               = useState('');
-    const [vista, setVista]               = useState('mapa'); // 'mapa' | 'lista'
+    const [historial, setHistorial] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState('');
+    const [vista, setVista] = useState('mapa'); // 'mapa' | 'lista'
 
     const [mostrarModalVehiculo, setMostrarModalVehiculo] = useState(false);
-    const [mostrarModalIngreso, setMostrarModalIngreso]   = useState(false);
+    const [errorVehiculo, setErrorVehiculo] = useState('');
+    const [errorIngreso, setErrorIngreso] = useState('');
+    const [mostrarModalIngreso, setMostrarModalIngreso] = useState(false);
     const [parqueaderoPreseleccionado, setParqueaderoPreseleccionado] = useState('');
 
     const [nuevoVehiculo, setNuevoVehiculo] = useState({ placa: '', marca: '', color: '', tipoVehiculo: 'CARRO' });
-    const [nuevoIngreso, setNuevoIngreso]   = useState({ vehiculoId: '', parqueaderoId: '' });
+    const [nuevoIngreso, setNuevoIngreso] = useState({ vehiculoId: '', parqueaderoId: '' });
 
     const cargarDatos = async () => {
         setCargando(true);
@@ -61,13 +63,15 @@ function Dashboard() {
 
     const handleCrearVehiculo = async (e) => {
         e.preventDefault();
+        setErrorVehiculo('');
         try {
             await registrarVehiculo(nuevoVehiculo);
             setMostrarModalVehiculo(false);
+            setErrorVehiculo('');
             setNuevoVehiculo({ placa: '', marca: '', color: '', tipoVehiculo: 'CARRO' });
             cargarDatos();
         } catch (err) {
-            setError('Error al registrar vehículo: ' + err);
+            setErrorVehiculo('Error al registrar vehículo: ' + err);
         }
     };
 
@@ -90,7 +94,7 @@ function Dashboard() {
             setParqueaderoPreseleccionado('');
             cargarDatos();
         } catch (err) {
-            setError('Error al registrar entrada: ' + err);
+            setErrorIngreso('Error al registrar entrada: ' + err);
         }
     };
 
@@ -204,7 +208,7 @@ function Dashboard() {
                                     ))}
                                 </ul>
                             )}
-                            <button className="btn-primary" onClick={() => setMostrarModalVehiculo(true)}>
+                            <button className="btn-primary" onClick={() => { setMostrarModalVehiculo(true); setErrorVehiculo(''); }}>
                                 + Agregar Vehículo
                             </button>
                         </div>
@@ -240,17 +244,21 @@ function Dashboard() {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h3>Registrar Vehículo</h3>
+                        {errorVehiculo && <div className="error-msg" style={{ marginBottom: 12 }}>{errorVehiculo}</div>}
                         <form onSubmit={handleCrearVehiculo}>
                             <div className="form-group"><label>Placa</label>
                                 <input type="text" required
+                                    value={nuevoVehiculo.placa}
                                     onChange={e => setNuevoVehiculo({ ...nuevoVehiculo, placa: e.target.value.toUpperCase() })} />
                             </div>
                             <div className="form-group"><label>Marca</label>
                                 <input type="text" required
+                                    value={nuevoVehiculo.marca}
                                     onChange={e => setNuevoVehiculo({ ...nuevoVehiculo, marca: e.target.value })} />
                             </div>
                             <div className="form-group"><label>Color</label>
                                 <input type="text" required
+                                    value={nuevoVehiculo.color}
                                     onChange={e => setNuevoVehiculo({ ...nuevoVehiculo, color: e.target.value })} />
                             </div>
                             <div className="form-group">
@@ -276,6 +284,7 @@ function Dashboard() {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h3>Registrar Entrada</h3>
+                        {errorIngreso && <div className="error-msg" style={{ marginBottom: 12 }}>{errorIngreso}</div>}
                         <form onSubmit={handleCrearIngreso}>
                             <div className="form-group">
                                 <label>Selecciona tu Vehículo</label>
@@ -302,7 +311,7 @@ function Dashboard() {
                             </div>
                             <div className="form-actions">
                                 <button type="button" className="btn-secondary"
-                                    onClick={() => { setMostrarModalIngreso(false); setParqueaderoPreseleccionado(''); }}>
+                                    onClick={() => { setMostrarModalIngreso(false); setParqueaderoPreseleccionado(''); setErrorIngreso(''); }}>
                                     Cancelar
                                 </button>
                                 <button type="submit" className="btn-primary">Confirmar Entrada</button>
