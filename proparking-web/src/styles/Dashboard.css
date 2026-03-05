@@ -211,8 +211,7 @@
     font-size: 14px;
 }
 
-.btn-save,
-.btn-cancel {
+.btn-save, .btn-cancel {
     background: none;
     border: 1px solid #e2e8f0;
     padding: 5px 10px;
@@ -246,14 +245,9 @@
 /* Reutilización de modales previos */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     z-index: 1000;
 }
 
@@ -261,17 +255,13 @@
     background-color: white;
     padding: 30px;
     border-radius: 10px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 100%; max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 .form-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    display: flex; gap: 10px; margin-top: 20px;
 }
-
 /* ==========================================================================
    MÉTRICAS
    ========================================================================== */
@@ -289,7 +279,7 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     border: 1px solid #e2e8f0;
 }
 
@@ -439,5 +429,40 @@
 
     .navbar-user .user-role {
         display: none;
+    }
+}
+
+/* ==========================================================================
+   RESPONSIVE ADICIONAL — SuperAdmin, Reportes, Dashboard cliente
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* SuperAdmin modal y tablas */
+    .superadmin-table,
+    table {
+        font-size: 13px;
+    }
+
+    /* Dashboard cliente — mapa */
+    .widget-card[style*="span 2"] {
+        grid-column: span 1 !important;
+    }
+
+    /* Botones navbar */
+    .btn-reportes {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    /* Modales en móvil */
+    .modal-overlay {
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        border-radius: 16px 16px 0 0;
+        max-width: 100%;
+        margin: 0;
+        max-height: 90vh;
+        overflow-y: auto;
     }
 }

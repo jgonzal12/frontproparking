@@ -137,6 +137,7 @@ input:focus {
 .auth-footer a:hover {
     text-decoration: underline;
 }
+
 .success-msg {
     background-color: #f0fdf4;
     color: #16a34a;
@@ -146,4 +147,17 @@ input:focus {
     margin-top: 12px;
     font-size: 14px;
     text-align: center;
+}
+
+/* ==========================================================================
+   RESPONSIVE — MÓVIL
+   ========================================================================== */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 24px 20px;
+    }
+
+    .auth-card h2 {
+        font-size: 20px;
+    }
 }
