@@ -11,21 +11,27 @@ function Dashboard() {
     const navigate = useNavigate();
     const { usuario, logout } = useAuth();
 
-    const [vehiculos, setVehiculos] = useState([]);
+    const [vehiculos, setVehiculos]       = useState([]);
     const [parqueaderos, setParqueaderos] = useState([]);
-    const [historial, setHistorial] = useState([]);
-    const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState('');
-    const [vista, setVista] = useState('mapa'); // 'mapa' | 'lista'
+    const [historial, setHistorial]       = useState([]);
+    const [cargando, setCargando]         = useState(true);
+    const [error, setError]               = useState('');
+    const [vista, setVista]               = useState('mapa'); // 'mapa' | 'lista'
 
     const [mostrarModalVehiculo, setMostrarModalVehiculo] = useState(false);
-    const [errorVehiculo, setErrorVehiculo] = useState('');
-    const [errorIngreso, setErrorIngreso] = useState('');
-    const [mostrarModalIngreso, setMostrarModalIngreso] = useState(false);
+    const [errorVehiculo, setErrorVehiculo]                 = useState('');
+    const [errorIngreso, setErrorIngreso]                   = useState('');
+    const [mostrarModalIngreso, setMostrarModalIngreso]   = useState(false);
     const [parqueaderoPreseleccionado, setParqueaderoPreseleccionado] = useState('');
 
     const [nuevoVehiculo, setNuevoVehiculo] = useState({ placa: '', marca: '', color: '', tipoVehiculo: 'CARRO' });
-    const [nuevoIngreso, setNuevoIngreso] = useState({ vehiculoId: '', parqueaderoId: '' });
+
+    // Filtros historial
+    const [filtroEstado, setFiltroEstado] = useState('');
+    const [filtroDesde, setFiltroDesde]   = useState('');
+    const [filtroHasta, setFiltroHasta]   = useState('');
+    const [cargandoHistorial, setCargandoHistorial] = useState(false);
+    const [nuevoIngreso, setNuevoIngreso]   = useState({ vehiculoId: '', parqueaderoId: '' });
 
     const cargarDatos = async () => {
         setCargando(true);
@@ -47,6 +53,35 @@ function Dashboard() {
     };
 
     useEffect(() => { cargarDatos(); }, []);
+
+    const aplicarFiltros = async () => {
+        setCargandoHistorial(true);
+        try {
+            const data = await obtenerMiHistorial({
+                estado: filtroEstado || undefined,
+                desde:  filtroDesde  || undefined,
+                hasta:  filtroHasta  || undefined,
+            });
+            setHistorial(data);
+        } catch (err) {
+            setError('Error al filtrar historial: ' + err);
+        } finally {
+            setCargandoHistorial(false);
+        }
+    };
+
+    const limpiarFiltros = async () => {
+        setFiltroEstado('');
+        setFiltroDesde('');
+        setFiltroHasta('');
+        setCargandoHistorial(true);
+        try {
+            const data = await obtenerMiHistorial();
+            setHistorial(data);
+        } finally {
+            setCargandoHistorial(false);
+        }
+    };
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -215,20 +250,68 @@ function Dashboard() {
 
                         {/* WIDGET HISTORIAL */}
                         <div className="widget-card">
-                            <h3>Historial de Ingresos</h3>
-                            {historial.length === 0 ? <p>No tienes actividad reciente.</p> : (
-                                <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+                            <h3>Historial de Pagos</h3>
+
+                            {/* Filtros */}
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                                <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
+                                    style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, flex: 1 }}>
+                                    <option value="">Todos</option>
+                                    <option value="ACTIVO">Activo</option>
+                                    <option value="FINALIZADO">Finalizado</option>
+                                </select>
+                                <input type="date" value={filtroDesde} onChange={e => setFiltroDesde(e.target.value)}
+                                    style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, flex: 1 }} />
+                                <input type="date" value={filtroHasta} onChange={e => setFiltroHasta(e.target.value)}
+                                    style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, flex: 1 }} />
+                                <button onClick={aplicarFiltros}
+                                    style={{ padding: '6px 12px', backgroundColor: '#1e40af', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
+                                    🔍 Filtrar
+                                </button>
+                                <button onClick={limpiarFiltros}
+                                    style={{ padding: '6px 12px', backgroundColor: '#e2e8f0', color: '#475569', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
+                                    ✖ Limpiar
+                                </button>
+                            </div>
+
+                            {cargandoHistorial ? <p>Cargando...</p> : historial.length === 0 ? (
+                                <p style={{ color: '#94a3b8', textAlign: 'center', marginTop: 20 }}>No hay registros para los filtros seleccionados.</p>
+                            ) : (
+                                <ul style={{ paddingLeft: 0, listStyle: 'none', maxHeight: 360, overflowY: 'auto' }}>
                                     {historial.map(h => (
                                         <li key={h.id} style={{
-                                            marginBottom: 10, padding: 10,
-                                            borderLeft: `4px solid ${h.estado === 'ACTIVO' ? '#22c55e' : '#94a3b8'}`,
-                                            backgroundColor: '#f8fafc'
+                                            marginBottom: 10, padding: 12,
+                                            borderLeft: `4px solid ${h.estado === 'ACTIVO' ? '#22c55e' : '#2563eb'}`,
+                                            backgroundColor: '#f8fafc', borderRadius: 6
                                         }}>
-                                            <strong>{h.parqueaderoNombre}</strong> — Placa: {h.placaVehiculo}<br />
-                                            <span style={{ fontSize: 12 }}>Entrada: {new Date(h.fechaEntrada).toLocaleString()}</span><br />
-                                            <span style={{ fontSize: 12, fontWeight: 'bold', color: h.estado === 'ACTIVO' ? '#22c55e' : '#64748b' }}>
-                                                Estado: {h.estado}
-                                            </span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                <div>
+                                                    <strong>{h.parqueaderoNombre}</strong>
+                                                    <span style={{ fontSize: 12, color: '#64748b', marginLeft: 8 }}>🚗 {h.placaVehiculo}</span>
+                                                </div>
+                                                {h.monto && (
+                                                    <strong style={{ color: '#16a34a', fontSize: 15 }}>
+                                                        ${h.monto.toLocaleString()}
+                                                    </strong>
+                                                )}
+                                            </div>
+                                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                                                📅 {new Date(h.fechaEntrada).toLocaleString()}
+                                                {h.fechaSalida && <> → {new Date(h.fechaSalida).toLocaleString()}</>}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                                                <span style={{
+                                                    fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 12,
+                                                    backgroundColor: h.estado === 'ACTIVO' ? '#dcfce7' : '#dbeafe',
+                                                    color: h.estado === 'ACTIVO' ? '#16a34a' : '#1e40af'
+                                                }}>{h.estado}</span>
+                                                {h.metodoPago && (
+                                                    <span style={{
+                                                        fontSize: 11, padding: '2px 8px', borderRadius: 12,
+                                                        backgroundColor: '#f1f5f9', color: '#475569'
+                                                    }}>💳 {h.metodoPago.replace('_', ' ')}</span>
+                                                )}
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>

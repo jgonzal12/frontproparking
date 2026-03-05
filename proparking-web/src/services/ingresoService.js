@@ -1,8 +1,12 @@
 import api from '../api/axios';
 
-export const obtenerMiHistorial = async () => {
+export const obtenerMiHistorial = async (filtros = {}) => {
     try {
-        const response = await api.get('/cliente/historial');
+        const params = {};
+        if (filtros.estado) params.estado = filtros.estado;
+        if (filtros.desde)  params.desde  = filtros.desde;
+        if (filtros.hasta)  params.hasta  = filtros.hasta;
+        const response = await api.get('/cliente/historial', { params });
         return response.data;
     } catch (error) {
         throw error.response?.data?.error || 'Error al cargar el historial';
