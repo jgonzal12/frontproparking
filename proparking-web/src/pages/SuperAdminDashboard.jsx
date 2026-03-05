@@ -20,6 +20,10 @@ function SuperAdminDashboard() {
     const [error, setError]               = useState('');
     const [exito, setExito]               = useState('');
     const [tab, setTab]                   = useState('parqueaderos');
+    const [logs, setLogs]                 = useState([]);
+    const [cargandoLogs, setCargandoLogs] = useState(false);
+    const [filtroAccion, setFiltroAccion] = useState('');
+    const [filtroEmail, setFiltroEmail]   = useState('');
 
     // Modal crear/editar parqueadero
     const [mostrarModal, setMostrarModal]         = useState(false);
@@ -63,8 +67,8 @@ function SuperAdminDashboard() {
     };
 
     useEffect(() => {
-        if (tabActiva === 'logs') cargarLogs();
-    }, [tabActiva]);
+        if (tab === 'logs') cargarLogs();
+    }, [tab]);
 
     const mostrarExito = (msg) => {
         setExito(msg);
@@ -184,14 +188,14 @@ function SuperAdminDashboard() {
 
             <main className="dashboard-content">
                 <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-                    {['parqueaderos', 'usuarios'].map(t => (
+                    {['parqueaderos', 'usuarios', 'logs'].map(t => (
                         <button key={t} onClick={() => setTab(t)} style={{
                             padding: '10px 24px', borderRadius: 8, border: 'none',
                             cursor: 'pointer', fontWeight: 600, fontSize: 14,
                             backgroundColor: tab === t ? '#1e40af' : '#e2e8f0',
                             color: tab === t ? 'white' : '#475569',
                         }}>
-                            {t === 'parqueaderos' ? '🏢 Parqueaderos' : '👥 Usuarios'}
+                            {t === 'parqueaderos' ? '🏢 Parqueaderos' : t === 'usuarios' ? '👥 Usuarios' : '📋 Logs'}
                         </button>
                     ))}
                 </div>
