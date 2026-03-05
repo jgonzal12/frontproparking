@@ -14,6 +14,7 @@ function AdminDashboard() {
     const [parqueaderos, setParqueaderos] = useState([]);
     const [cargando, setCargando]         = useState(true);
     const [error, setError]               = useState('');
+    const [exito, setExito]               = useState('');
 
     // Modal de salida/pago
     const [mostrarModalPago, setMostrarModalPago]         = useState(false);
@@ -56,6 +57,8 @@ function AdminDashboard() {
             await registrarSalida(ingresoSeleccionado.id, metodoPago);
             setMostrarModalPago(false);
             setIngresoSeleccionado(null);
+            setExito('✅ Salida del vehículo registrada exitosamente');
+            setTimeout(() => setExito(''), 4000);
             cargarDatos();
         } catch (err) {
             setError('Error al procesar salida: ' + err);
@@ -93,7 +96,6 @@ function AdminDashboard() {
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
-                    <button onClick={() => navigate("/reportes")} className="btn-logout" style={{ backgroundColor: "#1e40af", color: "white", marginRight: 8 }}>📊 Reportes</button>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>
@@ -101,7 +103,8 @@ function AdminDashboard() {
             <main className="dashboard-content">
                 <h2>Gestión Operativa</h2>
 
-                {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
+                {exito  && <div className="success-msg" style={{ marginBottom: 16 }}>{exito}</div>}
+                {error && <div className="error-msg"   style={{ marginBottom: 16 }}>{error}</div>}
 
                 {cargando ? <p>Sincronizando con el servidor...</p> : (
                     <div className="widget-grid">
@@ -211,7 +214,7 @@ function AdminDashboard() {
                                     <option value="EFECTIVO">Efectivo</option>
                                     <option value="TARJETA_DEBITO">Tarjeta Débito</option>
                                     <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
-                                    <option value="TRANSFERENCIA_BANCARIA">Transferencia</option>
+                                    <option value="TRANSFERENCIA_BANCARIA">Transferencia / Nequi</option>
                                 </select>
                             </div>
                             <div className="form-actions">
