@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { obtenerParqueaderos } from '../services/parqueaderoService';
-import { obtenerLogs } from '../services/logService';
 import {
     listarUsuarios, asignarAdmin, revocarAdmin,
     crearParqueadero, actualizarParqueadero, eliminarParqueadero
@@ -307,6 +306,77 @@ function SuperAdminDashboard() {
                                         </table>
                                     )}
                                 </div>
+                            </div>
+                        )}
+                        {/* ===== TAB LOGS ===== */}
+                        {tab === 'logs' && (
+                            <div>
+                                <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+                                    <input type="text" placeholder="Filtrar por email..."
+                                        value={filtroEmail}
+                                        onChange={e => setFiltroEmail(e.target.value)}
+                                        style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, minWidth: 200 }} />
+                                    <select value={filtroAccion} onChange={e => setFiltroAccion(e.target.value)}
+                                        style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13 }}>
+                                        <option value="">Todas las acciones</option>
+                                        <option value="LOGIN">Login</option>
+                                        <option value="LOGIN_FALLIDO">Login fallido</option>
+                                        <option value="LOGIN_BLOQUEADO">Login bloqueado</option>
+                                        <option value="REGISTRO">Registro</option>
+                                        <option value="INGRESO_VEHICULO">Ingreso vehículo</option>
+                                        <option value="SALIDA_VEHICULO">Salida vehículo</option>
+                                        <option value="ASIGNAR_ADMIN">Asignar admin</option>
+                                        <option value="REVOCAR_ADMIN">Revocar admin</option>
+                                    </select>
+                                    <button onClick={cargarLogs} style={{
+                                        padding: '8px 16px', backgroundColor: '#1e40af', color: 'white',
+                                        border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13
+                                    }}>🔄 Actualizar</button>
+                                </div>
+
+                                {cargandoLogs ? <p>Cargando logs...</p> : (
+                                    <div style={{ overflowX: 'auto' }}>
+                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: '#f8fafc' }}>
+                                                    <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', borderBottom: '2px solid #e2e8f0' }}>Fecha</th>
+                                                    <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', borderBottom: '2px solid #e2e8f0' }}>Acción</th>
+                                                    <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', borderBottom: '2px solid #e2e8f0' }}>Usuario</th>
+                                                    <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', borderBottom: '2px solid #e2e8f0' }}>Descripción</th>
+                                                    <th style={{ padding: '10px 8px', textAlign: 'left', color: '#64748b', borderBottom: '2px solid #e2e8f0' }}>IP</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {logs
+                                                    .filter(l => !filtroEmail || l.emailUsuario?.includes(filtroEmail))
+                                                    .filter(l => !filtroAccion || l.accion === filtroAccion)
+                                                    .map(l => (
+                                                    <tr key={l.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                        <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', color: '#64748b' }}>
+                                                            {new Date(l.fecha).toLocaleString()}
+                                                        </td>
+                                                        <td style={{ padding: '10px 8px' }}>
+                                                            <span style={{
+                                                                padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700,
+                                                                backgroundColor: l.accion.includes('FALLIDO') || l.accion.includes('BLOQUEADO') ? '#fee2e2' : '#dbeafe',
+                                                                color: l.accion.includes('FALLIDO') || l.accion.includes('BLOQUEADO') ? '#dc2626' : '#1e40af'
+                                                            }}>
+                                                                {l.accion}
+                                                            </span>
+                                                        </td>
+                                                        <td style={{ padding: '10px 8px', color: '#475569' }}>{l.emailUsuario || '—'}</td>
+                                                        <td style={{ padding: '10px 8px' }}>{l.descripcion}</td>
+                                                        <td style={{ padding: '10px 8px', color: '#94a3b8', fontSize: 12 }}>{l.ip || '—'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {logs.filter(l => !filtroEmail || l.emailUsuario?.includes(filtroEmail))
+                                             .filter(l => !filtroAccion || l.accion === filtroAccion).length === 0 && (
+                                            <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: 20 }}>No hay logs que coincidan.</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>
