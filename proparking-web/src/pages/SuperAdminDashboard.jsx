@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { obtenerParqueaderos } from '../services/parqueaderoService';
+import { obtenerLogs } from '../services/logService';
 import {
     listarUsuarios, asignarAdmin, revocarAdmin,
     crearParqueadero, actualizarParqueadero, eliminarParqueadero
