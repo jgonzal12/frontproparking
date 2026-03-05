@@ -50,6 +50,22 @@ function SuperAdminDashboard() {
 
     useEffect(() => { cargarDatos(); }, []);
 
+    const cargarLogs = async () => {
+        setCargandoLogs(true);
+        try {
+            const data = await obtenerLogs(0, 100);
+            setLogs(data.content || []);
+        } catch (err) {
+            console.error('Error cargando logs:', err);
+        } finally {
+            setCargandoLogs(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tabActiva === 'logs') cargarLogs();
+    }, [tabActiva]);
+
     const mostrarExito = (msg) => {
         setExito(msg);
         setTimeout(() => setExito(''), 3000);
