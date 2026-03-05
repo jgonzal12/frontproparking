@@ -211,7 +211,8 @@
     font-size: 14px;
 }
 
-.btn-save, .btn-cancel {
+.btn-save,
+.btn-cancel {
     background: none;
     border: 1px solid #e2e8f0;
     padding: 5px 10px;
@@ -245,9 +246,14 @@
 /* Reutilización de modales previos */
 .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 1000;
 }
 
@@ -255,10 +261,183 @@
     background-color: white;
     padding: 30px;
     border-radius: 10px;
-    width: 100%; max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .form-actions {
-    display: flex; gap: 10px; margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* ==========================================================================
+   MÉTRICAS
+   ========================================================================== */
+.metricas-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.metrica-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.metrica-icono {
+    font-size: 32px;
+}
+
+.metrica-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.metrica-valor {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.metrica-label {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Botón reportes en navbar */
+.btn-reportes {
+    background-color: #ede9fe;
+    color: #7c3aed;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Tabla con scroll en móvil */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* success-msg */
+.success-msg {
+    background-color: #dcfce7;
+    color: #16a34a;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
+    font-weight: 500;
+}
+
+.error-msg {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   RESPONSIVE — MÓVIL
+   ========================================================================== */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .navbar-brand h1 {
+        font-size: 16px;
+    }
+
+    .navbar-user {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .navbar-saludo {
+        display: none;
+    }
+
+    .dashboard-content {
+        padding: 16px;
+    }
+
+    .metricas-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .metrica-card {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .metrica-icono {
+        font-size: 24px;
+    }
+
+    .metrica-valor {
+        font-size: 18px;
+    }
+
+    .widget-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .widget-card[style*="span 2"],
+    .widget-card {
+        grid-column: span 1 !important;
+    }
+
+    .modal-content {
+        margin: 16px;
+        padding: 20px;
+        max-width: calc(100vw - 32px);
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 10px 6px;
+        font-size: 13px;
+    }
+
+    .btn-action-exit {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .metricas-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .navbar-user .user-role {
+        display: none;
+    }
 }
