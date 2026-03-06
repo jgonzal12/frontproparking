@@ -7,7 +7,7 @@ function Register() {
     const [formData, setFormData] = useState({
         nombre: '', apellido: '', email: '', password: ''
     });
-    const [error, setError]       = useState('');
+    const [error, setError] = useState('');
     const [cargando, setCargando] = useState(false);
     const navigate = useNavigate();
 
