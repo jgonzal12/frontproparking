@@ -5,33 +5,37 @@ import { obtenerTodosLosIngresos } from '../services/ingresoService';
 import { registrarSalida } from '../services/pagoService';
 import { obtenerParqueaderos, actualizarTarifas } from '../services/parqueaderoService';
 import '../styles/Dashboard.css';
+import api from '../api/axios';
 
 function AdminDashboard() {
     const navigate = useNavigate();
     const { usuario, logout } = useAuth();
 
-    const [ingresos, setIngresos]         = useState([]);
+    const [ingresos, setIngresos] = useState([]);
     const [parqueaderos, setParqueaderos] = useState([]);
-    const [cargando, setCargando]         = useState(true);
-    const [error, setError]               = useState('');
-    const [exito, setExito]               = useState('');
+    const [cargando, setCargando] = useState(true);
+    const [metricas, setMetricas] = useState({ vehiculosActivos: 0, ingresosHoy: 0, totalRecaudadoHoy: 0 });
+    const [error, setError] = useState('');
+    const [exito, setExito] = useState('');
 
-    const [mostrarModalPago, setMostrarModalPago]       = useState(false);
+    const [mostrarModalPago, setMostrarModalPago] = useState(false);
     const [ingresoSeleccionado, setIngresoSeleccionado] = useState(null);
-    const [metodoPago, setMetodoPago]                   = useState('EFECTIVO');
+    const [metodoPago, setMetodoPago] = useState('EFECTIVO');
 
     const [editandoParqueadero, setEditandoParqueadero] = useState(null);
-    const [tarifaEdicion, setTarifaEdicion]             = useState({ tarifaCarro: '', tarifaMoto: '' });
+    const [tarifaEdicion, setTarifaEdicion] = useState({ tarifaCarro: '', tarifaMoto: '' });
 
     const cargarDatos = async () => {
         try {
             setCargando(true);
-            const [dataIngresos, dataParqueaderos] = await Promise.all([
+            const [dataIngresos, dataParqueaderos, dataMetricas] = await Promise.all([
                 obtenerTodosLosIngresos(),
                 obtenerParqueaderos(),
+                api.get('/admin/metricas').then(r => r.data).catch(() => null),
             ]);
             setIngresos(dataIngresos);
             setParqueaderos(dataParqueaderos);
+            if (dataMetricas) setMetricas(dataMetricas);
         } catch (err) {
             setError('Error al cargar la información del sistema');
         } finally {
@@ -77,18 +81,9 @@ function AdminDashboard() {
         }
     };
 
-    const ingresosActivos   = ingresos.filter(i => i.estado === 'ACTIVO');
-    const ingresosHoy       = ingresos.filter(i => {
-        const hoy = new Date().toDateString();
-        return new Date(i.fechaEntrada).toDateString() === hoy;
-    });
-    const totalRecaudadoHoy = ingresos
-        .filter(i => (i.estado === 'FINALIZADO' || i.estado === 'PAGADO') && 
-            new Date(i.fechaEntrada).toDateString() === new Date().toDateString())
-        .reduce((sum, i) => sum + (i.monto || 0), 0);
-
+    const ingresosActivos = ingresos.filter(i => i.estado === 'ACTIVO');
     const espaciosDisponibles = parqueaderos.reduce((sum, p) => sum + p.espaciosDisponibles, 0);
-    const capacidadTotal      = parqueaderos.reduce((sum, p) => sum + p.capacidadTotal, 0);
+    const capacidadTotal = parqueaderos.reduce((sum, p) => sum + p.capacidadTotal, 0);
 
     return (
         <div className="dashboard-layout">
@@ -108,7 +103,7 @@ function AdminDashboard() {
                 <h2>Gestión Operativa</h2>
 
                 {exito && <div className="success-msg" style={{ marginBottom: 16 }}>{exito}</div>}
-                {error && <div className="error-msg"   style={{ marginBottom: 16 }}>{error}</div>}
+                {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
 
                 {cargando ? <p>Sincronizando con el servidor...</p> : (
                     <>
@@ -117,21 +112,21 @@ function AdminDashboard() {
                             <div className="metrica-card">
                                 <div className="metrica-icono">🚗</div>
                                 <div className="metrica-info">
-                                    <span className="metrica-valor">{ingresosActivos.length}</span>
+                                    <span className="metrica-valor">{metricas.vehiculosActivos}</span>
                                     <span className="metrica-label">Vehículos activos</span>
                                 </div>
                             </div>
                             <div className="metrica-card">
                                 <div className="metrica-icono">📅</div>
                                 <div className="metrica-info">
-                                    <span className="metrica-valor">{ingresosHoy.length}</span>
+                                    <span className="metrica-valor">{metricas.ingresosHoy}</span>
                                     <span className="metrica-label">Ingresos hoy</span>
                                 </div>
                             </div>
                             <div className="metrica-card">
                                 <div className="metrica-icono">💰</div>
                                 <div className="metrica-info">
-                                    <span className="metrica-valor">${totalRecaudadoHoy.toLocaleString()}</span>
+                                    <span className="metrica-valor">${Number(metricas.totalRecaudadoHoy).toLocaleString()}</span>
                                     <span className="metrica-label">Recaudado hoy</span>
                                 </div>
                             </div>
