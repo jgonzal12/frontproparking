@@ -17,10 +17,15 @@ api.interceptors.request.use(
 );
 
 // Interceptor de RESPONSE — detecta token expirado (401) y redirige al login
+// Excepto en rutas de auth donde el 401 es un error esperado (código incorrecto, contraseña incorrecta)
+const RUTAS_AUTH = ['/auth/verificar', '/auth/login', '/auth/recuperar', '/auth/restablecer'];
+
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const url = error.config?.url || '';
+        const esRutaAuth = RUTAS_AUTH.some(ruta => url.includes(ruta));
+        if (error.response?.status === 401 && !esRutaAuth) {
             localStorage.clear();
             window.location.href = '/login';
         }
