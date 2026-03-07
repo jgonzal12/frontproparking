@@ -1,112 +1,100 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { registrarUsuario } from '../services/authService';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { verificarCodigo } from '../services/authService';
 import '../styles/Auth.css';
 
-function Register() {
-    const [formData, setFormData] = useState({
-        nombre: '', apellido: '', email: '', password: '', confirmarPassword: ''
-    });
-    const [error, setError] = useState('');
-    const [cargando, setCargando] = useState(false);
+const MAX_INTENTOS = 5;
+
+function Verify() {
+    const location = useLocation();
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const [email] = useState(location.state?.email || '');
+    const [codigo, setCodigo] = useState('');
+    const [error, setError] = useState('');
+    const [intentos, setIntentos] = useState(0);
+    const [bloqueado, setBloqueado] = useState(false);
+    const [mensajeBloqueado, setMensajeBloqueado] = useState('');
+
+    const handleVerify = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (formData.password !== formData.confirmarPassword) {
-            setError('Las contraseñas no coinciden');
-            return;
-        }
-
-        setCargando(true);
         try {
-            const { confirmarPassword, ...datos } = formData;
-            await registrarUsuario(datos);
-            navigate('/verify', { state: { email: formData.email } });
+            await verificarCodigo(email, codigo);
+            navigate('/login', { state: { mensaje: '¡Cuenta activada! Ahora puedes iniciar sesión.' } });
         } catch (err) {
-            setError(err);
-        } finally {
-            setCargando(false);
+            const mensaje = typeof err === 'string' ? err : 'Código incorrecto';
+
+            if (mensaje.toLowerCase().includes('expirado')) {
+                setMensajeBloqueado(mensaje);
+                setBloqueado(true);
+                return;
+            }
+
+            const nuevosIntentos = intentos + 1;
+            setIntentos(nuevosIntentos);
+
+            if (nuevosIntentos >= MAX_INTENTOS) {
+                setMensajeBloqueado('Demasiados intentos fallidos.');
+                setBloqueado(true);
+            } else {
+                setError(`${mensaje}. Te quedan ${MAX_INTENTOS - nuevosIntentos} intento(s).`);
+                setCodigo('');
+            }
         }
     };
 
     return (
         <div className="auth-wrapper">
             <div className="auth-card">
-                <h2>Crear Cuenta</h2>
-                <p>Regístrate para usar ProParking</p>
+                <h2>Verificar Cuenta</h2>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Nombres</label>
-                        <input
-                            type="text"
-                            placeholder="Ej. Juan Andrés"
-                            value={formData.nombre}
-                            onChange={e => setFormData({ ...formData, nombre: e.target.value })}
-                            required
-                        />
+                {bloqueado ? (
+                    <div>
+                        <div className="error-msg" style={{ marginBottom: 16 }}>
+                            {mensajeBloqueado} Vuelve a registrarte para obtener un nuevo código.
+                        </div>
+                        <button className="btn-primary" onClick={() => navigate('/register')}>
+                            Volver al registro
+                        </button>
                     </div>
+                ) : (
+                    <>
+                        <p>Ingresa el código de 6 dígitos enviado a:<br /><strong>{email}</strong></p>
 
-                    <div className="form-group">
-                        <label>Apellidos</label>
-                        <input
-                            type="text"
-                            placeholder="Ej. González Pérez"
-                            value={formData.apellido}
-                            onChange={e => setFormData({ ...formData, apellido: e.target.value })}
-                            required
-                        />
-                    </div>
+                        <form onSubmit={handleVerify}>
+                            <div className="form-group">
+                                <label>Código de Verificación</label>
+                                <input
+                                    type="text"
+                                    placeholder="000000"
+                                    maxLength="6"
+                                    value={codigo}
+                                    onChange={e => setCodigo(e.target.value)}
+                                    style={{ letterSpacing: '8px', textAlign: 'center', fontSize: '20px' }}
+                                    required
+                                />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 4 }}>
+                                <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                                    {intentos > 0 && `Intentos: ${intentos}/${MAX_INTENTOS}`}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/register')}
+                                    style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: 13, cursor: 'pointer' }}>
+                                    ¿No recibiste el código?
+                                </button>
+                            </div>
+                            <button type="submit" className="btn-primary">Validar Código</button>
+                        </form>
 
-                    <div className="form-group">
-                        <label>Correo Electrónico</label>
-                        <input
-                            type="email"
-                            placeholder="correo@ejemplo.com"
-                            value={formData.email}
-                            onChange={e => setFormData({ ...formData, email: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Contraseña</label>
-                        <input
-                            type="password"
-                            placeholder="Mínimo 8 caracteres"
-                            value={formData.password}
-                            onChange={e => setFormData({ ...formData, password: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Confirmar Contraseña</label>
-                        <input
-                            type="password"
-                            placeholder="Repite tu contraseña"
-                            value={formData.confirmarPassword}
-                            onChange={e => setFormData({ ...formData, confirmarPassword: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <button type="submit" className="btn-primary" disabled={cargando}>
-                        {cargando ? 'Registrando...' : 'Registrarme'}
-                    </button>
-                </form>
-
-                {error && <div className="error-msg">{error}</div>}
-
-                <div className="auth-footer">
-                    ¿Ya tienes una cuenta? <Link to="/login">Inicia sesión aquí</Link>
-                </div>
+                        {error && <div className="error-msg" style={{ marginTop: 12 }}>{error}</div>}
+                    </>
+                )}
             </div>
         </div>
     );
 }
 
-export default Register;
+export default Verify;
