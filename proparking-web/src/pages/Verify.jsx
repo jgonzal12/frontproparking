@@ -14,6 +14,7 @@ function Verify() {
     const [error, setError] = useState('');
     const [intentos, setIntentos] = useState(0);
     const [bloqueado, setBloqueado] = useState(false);
+    const [mensajeBloqueado, setMensajeBloqueado] = useState('');
 
     const handleVerify = async (e) => {
         e.preventDefault();
@@ -22,13 +23,23 @@ function Verify() {
             await verificarCodigo(email, codigo);
             navigate('/login', { state: { mensaje: '¡Cuenta activada! Ahora puedes iniciar sesión.' } });
         } catch (err) {
+            const mensaje = typeof err === 'string' ? err : 'Código incorrecto';
+
+            // Si el código expiró → bloquear con mensaje directo
+            if (mensaje.toLowerCase().includes('expirado')) {
+                setMensajeBloqueado(mensaje);
+                setBloqueado(true);
+                return;
+            }
+
             const nuevosIntentos = intentos + 1;
             setIntentos(nuevosIntentos);
 
             if (nuevosIntentos >= MAX_INTENTOS) {
+                setMensajeBloqueado('Demasiados intentos fallidos.');
                 setBloqueado(true);
             } else {
-                setError(`Código incorrecto. Te quedan ${MAX_INTENTOS - nuevosIntentos} intento(s).`);
+                setError(`${mensaje}. Te quedan ${MAX_INTENTOS - nuevosIntentos} intento(s).`);
                 setCodigo('');
             }
         }
@@ -42,7 +53,7 @@ function Verify() {
                 {bloqueado ? (
                     <div>
                         <div className="error-msg" style={{ marginBottom: 16 }}>
-                            Demasiados intentos fallidos. Vuelve a registrarte para obtener un nuevo código.
+                            {mensajeBloqueado} Vuelve a registrarte para obtener un nuevo código.
                         </div>
                         <button className="btn-primary" onClick={() => navigate('/register')}>
                             Volver al registro
@@ -55,17 +66,22 @@ function Verify() {
                         <form onSubmit={handleVerify}>
                             <div className="form-group">
                                 <label>Código de Verificación</label>
-                                <input type="text" placeholder="000000" maxLength="6"
+                                <input
+                                    type="text"
+                                    placeholder="000000"
+                                    maxLength="6"
                                     value={codigo}
                                     onChange={e => setCodigo(e.target.value)}
                                     style={{ letterSpacing: '8px', textAlign: 'center', fontSize: '20px' }}
-                                    required />
+                                    required
+                                />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, marginBottom: 4 }}>
                                 <span style={{ fontSize: 12, color: '#94a3b8' }}>
                                     {intentos > 0 && `Intentos: ${intentos}/${MAX_INTENTOS}`}
                                 </span>
-                                <button type="button"
+                                <button
+                                    type="button"
                                     onClick={() => navigate('/register')}
                                     style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: 13, cursor: 'pointer' }}>
                                     ¿No recibiste el código?
