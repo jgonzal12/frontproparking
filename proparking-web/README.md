@@ -1,39 +1,39 @@
 # ProParking — Frontend
 
-Aplicación web para la gestión de parqueaderos con vistas diferenciadas según el rol del usuario: Cliente, Administrador y Super Administrador.
+Web application for parking lot management with role-based views: Client, Administrator and Super Administrator.
 
-## Tecnologías
+## Technologies
 
 - React 19 + Vite 7
 - React Router DOM 7
 - Axios
 - Lucide React
-- CSS por módulo
+- CSS per module
 
-## Instalación y ejecución local
+## Installation & Local Setup
 ```bash
-git clone <url-repositorio>
+git clone <repository-url>
 cd proparking-web
 npm install
-cp .env.example .env  # configurar variable
+cp .env.example .env  # configure variable
 npm run dev
 ```
 
-La app queda disponible en `http://localhost:5173`
+App available at `http://localhost:5173`
 
-## Variables de entorno
+## Environment Variables
 ```env
 VITE_API_URL=http://localhost:8080/api/v1
 ```
 
 ## Scripts
 
-| Comando | Descripción |
+| Command | Description |
 |---|---|
-| `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Build de producción |
-| `npm run preview` | Previsualiza el build |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
 
-## Despliegue
+## Deployment
 
-Preparado para **Vercel**. Configurar `VITE_API_URL` apuntando al backend en producción.
+Ready to deploy on **Vercel**. Set `VITE_API_URL` pointing to the production backend.
