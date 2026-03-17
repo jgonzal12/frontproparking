@@ -1,30 +1,36 @@
 # ProParking — Frontend
 
-Web application for parking lot management with role-based views: Client, Administrator and Super Administrator.
+Web application for parking lot management built with React. It provides 
+role-based dashboards so each type of user interacts only with what they need.
+
+## What it does
+
+- Public landing page with an interactive parking lot map
+- Account registration, email verification and password recovery
+- Client dashboard: manage vehicles and track entry history
+- Admin dashboard: manage vehicle entries/exits, process payments and view daily metrics
+- Super Admin dashboard: manage parking lots, assign administrators and view system logs
+- Report generation with PDF and Excel export
 
 ## Technologies
 
-- React 19 + Vite 7
+- React 19
+- Vite 7
 - React Router DOM 7
 - Axios
 - Lucide React
 - CSS per module
+- Vercel Analytics
 
 ## Installation & Local Setup
 ```bash
 git clone <repository-url>
 cd proparking-web
 npm install
-cp .env.example .env  # configure variable
 npm run dev
 ```
 
 App available at `http://localhost:5173`
-
-## Environment Variables
-```env
-VITE_API_URL=http://localhost:8080/api/v1
-```
 
 ## Scripts
 
@@ -33,7 +39,3 @@ VITE_API_URL=http://localhost:8080/api/v1
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
-
-## Deployment
-
-Ready to deploy on **Vercel**. Set `VITE_API_URL` pointing to the production backend.
