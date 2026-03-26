@@ -51,7 +51,10 @@ function Reportes() {
             .finally(() => setCargando(false));
     }, [parqueaderoId]);
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = async() => {
+        await logout();
+        navigate('/login');
+    };
 
     const handleDescargarPdf = async () => {
         setCargandoExport('pdf');

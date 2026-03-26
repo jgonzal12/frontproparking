@@ -27,6 +27,14 @@ export const iniciarSesion = async (email, password) => {
     }
 };
 
+export const cerrarSesion = async () => {
+    try {
+        await api.post('/auth/logout');
+    } catch (error) {
+        console.warn('No se pudo invalidar el token en el servidor:', error.message);
+    }
+};
+
 export const solicitarRecuperacion = async (email) => {
     try {
         const response = await api.post('/auth/recuperar', { email });

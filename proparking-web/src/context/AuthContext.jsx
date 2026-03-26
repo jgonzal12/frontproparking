@@ -1,9 +1,9 @@
 import { createContext, useContext, useState } from 'react';
+import { cerrarSesion } from '../services/authService';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-    // Inicializa desde localStorage para que al refrescar la página no se pierda la sesión
     const [usuario, setUsuario] = useState(() => {
         const token = localStorage.getItem('token');
         if (!token) return null;
@@ -23,7 +23,10 @@ export function AuthProvider({ children }) {
         setUsuario(data);
     };
 
-    const logout = () => {
+    // Logout real: primero invalida el token en el servidor,
+    // luego limpia el estado local
+    const logout = async () => {
+        await cerrarSesion(); // llama a POST /auth/logout con el token actual
         localStorage.clear();
         setUsuario(null);
     };
@@ -35,7 +38,6 @@ export function AuthProvider({ children }) {
     );
 }
 
-// Hook para usar el contexto fácilmente en cualquier componente
 export function useAuth() {
     return useContext(AuthContext);
 }

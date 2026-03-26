@@ -45,7 +45,9 @@ function AdminDashboard() {
 
     useEffect(() => { cargarDatos(); }, []);
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = async() => {
+        await logout(); navigate('/login');
+    };
 
     const abrirModalCobro = (ingreso) => {
         setIngresoSeleccionado(ingreso);

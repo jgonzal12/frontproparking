@@ -83,7 +83,9 @@ function Dashboard() {
         }
     };
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = async () => {
+        await logout(); navigate('/login');
+    };
 
     // Abre el modal de ingreso preseleccionando el parqueadero del mapa
     const handleRegistrarDesdesMapa = useCallback((parqueaderoId) => {

@@ -76,7 +76,10 @@ function SuperAdminDashboard() {
         setTimeout(() => setExito(''), 3000);
     };
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = async() => {
+        await logout();
+        navigate('/login');
+    };
 
     // --- Abrir modal crear ---
     const abrirModalCrear = () => {
