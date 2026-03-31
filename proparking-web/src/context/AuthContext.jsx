@@ -4,29 +4,26 @@ import { cerrarSesion } from '../services/authService';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+
     const [usuario, setUsuario] = useState(() => {
-        const token = localStorage.getItem('token');
-        if (!token) return null;
-        return {
-            token,
-            rol:    localStorage.getItem('rol'),
-            nombre: localStorage.getItem('nombre'),
-            id:     localStorage.getItem('id'),
-        };
+        const rol    = localStorage.getItem('rol');
+        const nombre = localStorage.getItem('nombre');
+        const id     = localStorage.getItem('id');
+        if (!rol) return null;
+        return { rol, nombre, id };
     });
 
     const login = (data) => {
-        localStorage.setItem('token',  data.token);
+
         localStorage.setItem('rol',    data.rol);
         localStorage.setItem('nombre', data.nombre);
         localStorage.setItem('id',     data.id);
-        setUsuario(data);
+        setUsuario({ rol: data.rol, nombre: data.nombre, id: data.id });
     };
 
-    // Logout real: primero invalida el token en el servidor,
-    // luego limpia el estado local
     const logout = async () => {
-        await cerrarSesion(); // llama a POST /auth/logout con el token actual
+
+        await cerrarSesion();
         localStorage.clear();
         setUsuario(null);
     };

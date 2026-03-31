@@ -27,11 +27,13 @@ export const iniciarSesion = async (email, password) => {
     }
 };
 
+
 export const cerrarSesion = async () => {
     try {
         await api.post('/auth/logout');
     } catch (error) {
-        console.warn('No se pudo invalidar el token en el servidor:', error.message);
+
+        console.warn('No se pudo invalidar la sesión en el servidor:', error.message);
     }
 };
 
