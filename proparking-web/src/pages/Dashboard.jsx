@@ -141,7 +141,7 @@ function Dashboard() {
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
-                    <Link to="/perfil" className="btn-perfil">👤 Mi Perfil</Link>
+                    <Link to="/perfil" className="btn-perfil">Mi Perfil</Link>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>

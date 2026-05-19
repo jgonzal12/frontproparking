@@ -16,22 +16,22 @@ function SuperAdminDashboard() {
     const { usuario, logout } = useAuth();
 
     const [parqueaderos, setParqueaderos] = useState([]);
-    const [usuarios, setUsuarios]         = useState([]);
-    const [cargando, setCargando]         = useState(true);
-    const [error, setError]               = useState('');
-    const [exito, setExito]               = useState('');
-    const [tab, setTab]                   = useState('parqueaderos');
-    const [logs, setLogs]                 = useState([]);
+    const [usuarios, setUsuarios] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState('');
+    const [exito, setExito] = useState('');
+    const [tab, setTab] = useState('parqueaderos');
+    const [logs, setLogs] = useState([]);
     const [cargandoLogs, setCargandoLogs] = useState(false);
     const [filtroAccion, setFiltroAccion] = useState('');
-    const [filtroEmail, setFiltroEmail]   = useState('');
+    const [filtroEmail, setFiltroEmail] = useState('');
 
-    const [mostrarModal, setMostrarModal]               = useState(false);
+    const [mostrarModal, setMostrarModal] = useState(false);
     const [parqueaderoEditando, setParqueaderoEditando] = useState(null);
-    const [formParqueadero, setFormParqueadero]         = useState(parqueaderoVacio);
+    const [formParqueadero, setFormParqueadero] = useState(parqueaderoVacio);
 
-    const [mostrarModalAsignar, setMostrarModalAsignar]         = useState(false);
-    const [usuarioSeleccionado, setUsuarioSeleccionado]         = useState(null);
+    const [mostrarModalAsignar, setMostrarModalAsignar] = useState(false);
+    const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
     const [parqueaderoSeleccionado, setParqueaderoSeleccionado] = useState('');
 
     const cargarDatos = async () => {
@@ -88,13 +88,13 @@ function SuperAdminDashboard() {
     const abrirModalEditar = (p) => {
         setParqueaderoEditando(p);
         setFormParqueadero({
-            nombre:         p.nombre,
-            direccion:      p.direccion,
+            nombre: p.nombre,
+            direccion: p.direccion,
             capacidadTotal: p.capacidadTotal,
-            tarifaCarro:    p.tarifaCarro,
-            tarifaMoto:     p.tarifaMoto,
-            latitud:        p.latitud  || '',
-            longitud:       p.longitud || '',
+            tarifaCarro: p.tarifaCarro,
+            tarifaMoto: p.tarifaMoto,
+            latitud: p.latitud || '',
+            longitud: p.longitud || '',
         });
         setMostrarModal(true);
     };
@@ -103,13 +103,13 @@ function SuperAdminDashboard() {
         e.preventDefault();
         setError('');
         const datos = {
-            nombre:         formParqueadero.nombre,
-            direccion:      formParqueadero.direccion,
+            nombre: formParqueadero.nombre,
+            direccion: formParqueadero.direccion,
             capacidadTotal: Number(formParqueadero.capacidadTotal),
-            tarifaCarro:    Number(formParqueadero.tarifaCarro),
-            tarifaMoto:     Number(formParqueadero.tarifaMoto),
-            latitud:        formParqueadero.latitud  !== '' ? Number(formParqueadero.latitud)  : null,
-            longitud:       formParqueadero.longitud !== '' ? Number(formParqueadero.longitud) : null,
+            tarifaCarro: Number(formParqueadero.tarifaCarro),
+            tarifaMoto: Number(formParqueadero.tarifaMoto),
+            latitud: formParqueadero.latitud !== '' ? Number(formParqueadero.latitud) : null,
+            longitud: formParqueadero.longitud !== '' ? Number(formParqueadero.longitud) : null,
         };
         try {
             if (parqueaderoEditando) {
@@ -167,7 +167,7 @@ function SuperAdminDashboard() {
         }
     };
 
-    const admins   = usuarios.filter(u => u.rol === 'ADMIN');
+    const admins = usuarios.filter(u => u.rol === 'ADMIN');
     const clientes = usuarios.filter(u => u.rol === 'CLIENTE');
 
     return (
@@ -179,7 +179,7 @@ function SuperAdminDashboard() {
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
-                    <Link to="/perfil" className="btn-perfil">👤 Mi Perfil</Link>
+                    <Link to="/perfil" className="btn-perfil">Mi Perfil</Link>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>
@@ -198,7 +198,7 @@ function SuperAdminDashboard() {
                     ))}
                 </div>
 
-                {error && <div className="error-msg"   style={{ marginBottom: 16 }}>{error}</div>}
+                {error && <div className="error-msg" style={{ marginBottom: 16 }}>{error}</div>}
                 {exito && <div className="success-msg" style={{ marginBottom: 16 }}>{exito}</div>}
 
                 {cargando ? <p>Cargando...</p> : (
@@ -350,30 +350,30 @@ function SuperAdminDashboard() {
                                                     .filter(l => !filtroEmail || l.emailUsuario?.includes(filtroEmail))
                                                     .filter(l => !filtroAccion || l.accion === filtroAccion)
                                                     .map(l => (
-                                                    <tr key={l.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                        <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', color: '#64748b' }}>
-                                                            {new Date(l.fecha).toLocaleString()}
-                                                        </td>
-                                                        <td style={{ padding: '10px 8px' }}>
-                                                            <span style={{
-                                                                padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700,
-                                                                backgroundColor: l.accion.includes('FALLIDO') || l.accion.includes('BLOQUEADO') ? '#fee2e2' : '#dbeafe',
-                                                                color: l.accion.includes('FALLIDO') || l.accion.includes('BLOQUEADO') ? '#dc2626' : '#1e40af'
-                                                            }}>
-                                                                {l.accion}
-                                                            </span>
-                                                        </td>
-                                                        <td style={{ padding: '10px 8px', color: '#475569' }}>{l.emailUsuario || '—'}</td>
-                                                        <td style={{ padding: '10px 8px' }}>{l.descripcion}</td>
-                                                        <td style={{ padding: '10px 8px', color: '#94a3b8', fontSize: 12 }}>{l.ip || '—'}</td>
-                                                    </tr>
-                                                ))}
+                                                        <tr key={l.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                            <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', color: '#64748b' }}>
+                                                                {new Date(l.fecha).toLocaleString()}
+                                                            </td>
+                                                            <td style={{ padding: '10px 8px' }}>
+                                                                <span style={{
+                                                                    padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700,
+                                                                    backgroundColor: l.accion.includes('FALLIDO') || l.accion.includes('BLOQUEADO') ? '#fee2e2' : '#dbeafe',
+                                                                    color: l.accion.includes('FALLIDO') || l.accion.includes('BLOQUEADO') ? '#dc2626' : '#1e40af'
+                                                                }}>
+                                                                    {l.accion}
+                                                                </span>
+                                                            </td>
+                                                            <td style={{ padding: '10px 8px', color: '#475569' }}>{l.emailUsuario || '—'}</td>
+                                                            <td style={{ padding: '10px 8px' }}>{l.descripcion}</td>
+                                                            <td style={{ padding: '10px 8px', color: '#94a3b8', fontSize: 12 }}>{l.ip || '—'}</td>
+                                                        </tr>
+                                                    ))}
                                             </tbody>
                                         </table>
                                         {logs.filter(l => !filtroEmail || l.emailUsuario?.includes(filtroEmail))
-                                             .filter(l => !filtroAccion || l.accion === filtroAccion).length === 0 && (
-                                            <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: 20 }}>No hay logs que coincidan.</p>
-                                        )}
+                                            .filter(l => !filtroAccion || l.accion === filtroAccion).length === 0 && (
+                                                <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: 20 }}>No hay logs que coincidan.</p>
+                                            )}
                                     </div>
                                 )}
                             </div>
