@@ -13,7 +13,10 @@ import Reportes from './pages/Reportes';
 import RecuperarPassword from './pages/RecuperarPassword';
 import RestablecerPassword from './pages/RestablecerPassword';
 import Perfil from './pages/Perfil';
+<<<<<<< HEAD
 
+=======
+>>>>>>> 39bc538f0eda125f0044d618a9460bafd1c6a8a8
 function App() {
     return (
         <AuthProvider>
@@ -23,6 +26,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/verify" element={<Verify />} />
+                    <Route path="/perfil" element={<Perfil />} />
                     <Route path="/recuperar-password" element={<RecuperarPassword />} />
                     <Route path="/restablecer-password" element={<RestablecerPassword />} />
 
@@ -44,6 +48,7 @@ function App() {
                         <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} />
                         <Route path="/reportes" element={<Reportes />} />
                     </Route>
+
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -11,16 +12,36 @@ function Perfil() {
     const [formData, setFormData] = useState({
         email: '',
         telefono: '',
+=======
+import React, { useState, useContext, useEffect } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { actualizarPerfil } from '../services/usuarioService';
+import '../styles/Perfil.css'; // Archivo de estilos que crearemos en el siguiente paso
+
+const Perfil = () => {
+    const { usuario, setUsuario } = useContext(AuthContext); // Asegúrate de que tu contexto exponga 'usuario' y 'setUsuario'
+    const [formData, setFormData] = useState({
+        correo: '',
+        telefono: ''
+>>>>>>> 39bc538f0eda125f0044d618a9460bafd1c6a8a8
     });
     const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
     const [loading, setLoading] = useState(false);
 
+<<<<<<< HEAD
     // Carga los datos actuales del usuario en el formulario
     useEffect(() => {
         if (usuario) {
             setFormData({
                 email: usuario.email || '',
                 telefono: usuario.telefono || '',
+=======
+    useEffect(() => {
+        if (usuario) {
+            setFormData({
+                correo: usuario.correo || '',
+                telefono: usuario.telefono || ''
+>>>>>>> 39bc538f0eda125f0044d618a9460bafd1c6a8a8
             });
         }
     }, [usuario]);
@@ -33,6 +54,7 @@ function Perfil() {
         e.preventDefault();
         setMensaje({ texto: '', tipo: '' });
         setLoading(true);
+<<<<<<< HEAD
 
         try {
             // El backend espera { email, telefono }
@@ -57,12 +79,27 @@ function Perfil() {
             setMensaje({
                 texto: typeof error === 'string' ? error : 'Hubo un error al actualizar el perfil.',
                 tipo: 'error',
+=======
+        
+        try {
+            const data = await actualizarPerfil(formData);
+            
+            // Si el backend devuelve un token nuevo, actualízalo. Si solo devuelve datos, actualiza el estado.
+            setUsuario(data); 
+            
+            setMensaje({ texto: 'Tus datos han sido actualizados correctamente.', tipo: 'success' });
+        } catch (error) {
+            setMensaje({ 
+                texto: error.response?.data?.message || 'Hubo un error al actualizar el perfil.', 
+                tipo: 'error' 
+>>>>>>> 39bc538f0eda125f0044d618a9460bafd1c6a8a8
             });
         } finally {
             setLoading(false);
         }
     };
 
+<<<<<<< HEAD
     // Determina a qué dashboard volver según el rol
     const dashboardLink = () => {
         if (!usuario) return '/login';
@@ -188,5 +225,52 @@ function Perfil() {
         </div>
     );
 }
+=======
+    return (
+        <div className="perfil-container">
+            <div className="perfil-card">
+                <h2>Mi Perfil</h2>
+                <p className="perfil-subtitle">Actualiza tu información de contacto</p>
+                
+                {mensaje.texto && (
+                    <div className={`alert alert-${mensaje.tipo}`}>
+                        {mensaje.texto}
+                    </div>
+                )}
+                
+                <form onSubmit={handleSubmit} className="perfil-form">
+                    <div className="form-group">
+                        <label htmlFor="correo">Correo Electrónico:</label>
+                        <input 
+                            type="email" 
+                            id="correo"
+                            name="correo" 
+                            value={formData.correo} 
+                            onChange={handleChange} 
+                            required 
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="telefono">Número de Teléfono:</label>
+                        <input 
+                            type="text" 
+                            id="telefono"
+                            name="telefono" 
+                            value={formData.telefono} 
+                            onChange={handleChange} 
+                            required 
+                        />
+                    </div>
+                    
+                    <button type="submit" className="btn-guardar" disabled={loading}>
+                        {loading ? 'Guardando cambios...' : 'Guardar Cambios'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+>>>>>>> 39bc538f0eda125f0044d618a9460bafd1c6a8a8
 
 export default Perfil;
