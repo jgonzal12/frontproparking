@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { obtenerTodosLosIngresos } from '../services/ingresoService';
 import { registrarSalida } from '../services/pagoService';
@@ -46,7 +46,8 @@ function AdminDashboard() {
     useEffect(() => { cargarDatos(); }, []);
 
     const handleLogout = async () => {
-        await logout(); navigate('/login');
+        await logout();
+        navigate('/login');
     };
 
     const abrirModalCobro = (ingreso) => {
@@ -94,24 +95,10 @@ function AdminDashboard() {
                     <h1>ProParking <span className="admin-tag">Admin</span></h1>
                 </div>
                 <div className="navbar-user">
-                    <span>Hola, <strong>{usuario?.nombre}</strong></span>
+                    <span className="navbar-saludo">Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
-                    <Link
-                        to="/perfil"
-                        style={{
-                            backgroundColor: '#ede9fe',
-                            color: '#7c3aed',
-                            border: 'none',
-                            padding: '8px 14px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            fontSize: '13px',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        👤 Mi Perfil
-                    </Link>
+                    <button onClick={() => navigate('/reportes')} className="btn-reportes">📊 Reportes</button>
+                    <Link to="/perfil" className="btn-perfil">👤 Mi Perfil</Link>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>

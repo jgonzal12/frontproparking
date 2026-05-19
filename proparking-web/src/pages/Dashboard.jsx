@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { obtenerMisVehiculos, registrarVehiculo, eliminarVehiculo } from '../services/vehiculoService';
 import { obtenerParqueaderos } from '../services/parqueaderoService';
@@ -11,25 +11,24 @@ function Dashboard() {
     const navigate = useNavigate();
     const { usuario, logout } = useAuth();
 
-    const [vehiculos, setVehiculos] = useState([]);
+    const [vehiculos, setVehiculos]       = useState([]);
     const [parqueaderos, setParqueaderos] = useState([]);
-    const [historial, setHistorial] = useState([]);
-    const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState('');
-    const [vista, setVista] = useState('mapa'); // 'mapa' | 'lista'
+    const [historial, setHistorial]       = useState([]);
+    const [cargando, setCargando]         = useState(true);
+    const [error, setError]               = useState('');
+    const [vista, setVista]               = useState('mapa');
 
     const [mostrarModalVehiculo, setMostrarModalVehiculo] = useState(false);
-    const [errorVehiculo, setErrorVehiculo] = useState('');
-    const [errorIngreso, setErrorIngreso] = useState('');
-    const [mostrarModalIngreso, setMostrarModalIngreso] = useState(false);
+    const [errorVehiculo, setErrorVehiculo]               = useState('');
+    const [errorIngreso, setErrorIngreso]                 = useState('');
+    const [mostrarModalIngreso, setMostrarModalIngreso]   = useState(false);
     const [parqueaderoPreseleccionado, setParqueaderoPreseleccionado] = useState('');
 
     const [nuevoVehiculo, setNuevoVehiculo] = useState({ placa: '', marca: '', color: '', tipoVehiculo: 'CARRO' });
 
-    // Filtros historial
     const [filtroEstado, setFiltroEstado] = useState('');
-    const [filtroDesde, setFiltroDesde] = useState('');
-    const [filtroHasta, setFiltroHasta] = useState('');
+    const [filtroDesde, setFiltroDesde]   = useState('');
+    const [filtroHasta, setFiltroHasta]   = useState('');
     const [cargandoHistorial, setCargandoHistorial] = useState(false);
     const [nuevoIngreso, setNuevoIngreso] = useState({ vehiculoId: '', parqueaderoId: '' });
 
@@ -59,8 +58,8 @@ function Dashboard() {
         try {
             const data = await obtenerMiHistorial({
                 estado: filtroEstado || undefined,
-                desde: filtroDesde || undefined,
-                hasta: filtroHasta || undefined,
+                desde:  filtroDesde  || undefined,
+                hasta:  filtroHasta  || undefined,
             });
             setHistorial(data);
         } catch (err) {
@@ -84,10 +83,10 @@ function Dashboard() {
     };
 
     const handleLogout = async () => {
-        await logout(); navigate('/login');
+        await logout();
+        navigate('/login');
     };
 
-    // Abre el modal de ingreso preseleccionando el parqueadero del mapa
     const handleRegistrarDesdesMapa = useCallback((parqueaderoId) => {
         if (vehiculos.length === 0) {
             setError('Debes registrar un vehículo antes de ingresar a un parqueadero.');
@@ -142,22 +141,7 @@ function Dashboard() {
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
-                    <Link
-                        to="/perfil"
-                        style={{
-                            backgroundColor: '#ede9fe',
-                            color: '#7c3aed',
-                            border: 'none',
-                            padding: '8px 14px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            fontSize: '13px',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        👤 Mi Perfil
-                    </Link>
+                    <Link to="/perfil" className="btn-perfil">👤 Mi Perfil</Link>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>
@@ -169,7 +153,7 @@ function Dashboard() {
                 {cargando ? <p>Cargando información...</p> : (
                     <div className="widget-grid">
 
-                        {/* WIDGET MAPA — ocupa todo el ancho */}
+                        {/* WIDGET MAPA */}
                         <div className="widget-card" style={{ gridColumn: 'span 2' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                                 <h3>Parqueaderos Disponibles</h3>
@@ -269,8 +253,6 @@ function Dashboard() {
                         {/* WIDGET HISTORIAL */}
                         <div className="widget-card">
                             <h3>Historial de Pagos</h3>
-
-                            {/* Filtros */}
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                                 <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
                                     style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, flex: 1 }}>
