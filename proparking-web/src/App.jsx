@@ -12,6 +12,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Reportes from './pages/Reportes';
 import RecuperarPassword from './pages/RecuperarPassword';
 import RestablecerPassword from './pages/RestablecerPassword';
+import Perfil from './pages/Perfil';
 
 function App() {
     return (
@@ -24,6 +25,11 @@ function App() {
                     <Route path="/verify" element={<Verify />} />
                     <Route path="/recuperar-password" element={<RecuperarPassword />} />
                     <Route path="/restablecer-password" element={<RestablecerPassword />} />
+
+                    {/* Perfil disponible para cualquier rol autenticado */}
+                    <Route element={<PrivateRoute allowedRoles={['CLIENTE', 'ADMIN', 'SUPER_ADMIN']} />}>
+                        <Route path="/perfil" element={<Perfil />} />
+                    </Route>
 
                     <Route element={<PrivateRoute allowedRoles={['CLIENTE']} />}>
                         <Route path="/dashboard" element={<Dashboard />} />

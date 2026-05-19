@@ -45,7 +45,7 @@ function AdminDashboard() {
 
     useEffect(() => { cargarDatos(); }, []);
 
-    const handleLogout = async() => {
+    const handleLogout = async () => {
         await logout(); navigate('/login');
     };
 
@@ -94,9 +94,24 @@ function AdminDashboard() {
                     <h1>ProParking <span className="admin-tag">Admin</span></h1>
                 </div>
                 <div className="navbar-user">
-                    <span className="navbar-saludo">Hola, <strong>{usuario?.nombre}</strong></span>
+                    <span>Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
-                    <button onClick={() => navigate('/reportes')} className="btn-reportes">📊 Reportes</button>
+                    <Link
+                        to="/perfil"
+                        style={{
+                            backgroundColor: '#ede9fe',
+                            color: '#7c3aed',
+                            border: 'none',
+                            padding: '8px 14px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '13px',
+                            textDecoration: 'none',
+                        }}
+                    >
+                        👤 Mi Perfil
+                    </Link>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>

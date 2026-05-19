@@ -11,27 +11,27 @@ function Dashboard() {
     const navigate = useNavigate();
     const { usuario, logout } = useAuth();
 
-    const [vehiculos, setVehiculos]       = useState([]);
+    const [vehiculos, setVehiculos] = useState([]);
     const [parqueaderos, setParqueaderos] = useState([]);
-    const [historial, setHistorial]       = useState([]);
-    const [cargando, setCargando]         = useState(true);
-    const [error, setError]               = useState('');
-    const [vista, setVista]               = useState('mapa'); // 'mapa' | 'lista'
+    const [historial, setHistorial] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState('');
+    const [vista, setVista] = useState('mapa'); // 'mapa' | 'lista'
 
     const [mostrarModalVehiculo, setMostrarModalVehiculo] = useState(false);
-    const [errorVehiculo, setErrorVehiculo]                 = useState('');
-    const [errorIngreso, setErrorIngreso]                   = useState('');
-    const [mostrarModalIngreso, setMostrarModalIngreso]   = useState(false);
+    const [errorVehiculo, setErrorVehiculo] = useState('');
+    const [errorIngreso, setErrorIngreso] = useState('');
+    const [mostrarModalIngreso, setMostrarModalIngreso] = useState(false);
     const [parqueaderoPreseleccionado, setParqueaderoPreseleccionado] = useState('');
 
     const [nuevoVehiculo, setNuevoVehiculo] = useState({ placa: '', marca: '', color: '', tipoVehiculo: 'CARRO' });
 
     // Filtros historial
     const [filtroEstado, setFiltroEstado] = useState('');
-    const [filtroDesde, setFiltroDesde]   = useState('');
-    const [filtroHasta, setFiltroHasta]   = useState('');
+    const [filtroDesde, setFiltroDesde] = useState('');
+    const [filtroHasta, setFiltroHasta] = useState('');
     const [cargandoHistorial, setCargandoHistorial] = useState(false);
-    const [nuevoIngreso, setNuevoIngreso]   = useState({ vehiculoId: '', parqueaderoId: '' });
+    const [nuevoIngreso, setNuevoIngreso] = useState({ vehiculoId: '', parqueaderoId: '' });
 
     const cargarDatos = async () => {
         setCargando(true);
@@ -59,8 +59,8 @@ function Dashboard() {
         try {
             const data = await obtenerMiHistorial({
                 estado: filtroEstado || undefined,
-                desde:  filtroDesde  || undefined,
-                hasta:  filtroHasta  || undefined,
+                desde: filtroDesde || undefined,
+                hasta: filtroHasta || undefined,
             });
             setHistorial(data);
         } catch (err) {
@@ -142,6 +142,22 @@ function Dashboard() {
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
                     <span className="user-role">{usuario?.rol}</span>
+                    <Link
+                        to="/perfil"
+                        style={{
+                            backgroundColor: '#ede9fe',
+                            color: '#7c3aed',
+                            border: 'none',
+                            padding: '8px 14px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '13px',
+                            textDecoration: 'none',
+                        }}
+                    >
+                        👤 Mi Perfil
+                    </Link>
                     <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
                 </div>
             </nav>
