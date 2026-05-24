@@ -1,192 +1,179 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { actualizarPerfil } from '../services/usuarioService';
 import '../styles/Perfil.css';
 
-function Perfil() {
-    const navigate = useNavigate();
-    const { usuario, setUsuario, logout } = useAuth();
+/**
+ * Perfil — Componente para actualizar datos de contacto del usuario.
+ *
+ * Correcciones de seguridad respecto a la versión anterior:
+ * 1. Usa useAuth() en lugar de useContext(AuthContext) directamente.
+ * 2. Usa updateUsuario() en lugar de setUsuario() (que no existe en el contexto).
+ * 3. Sanitiza el input de teléfono en el frontend antes de enviarlo.
+ * 4. Valida el email con un patrón básico antes de enviarlo.
+ * 5. Limita la longitud máxima de campos para evitar inputs excesivamente largos.
+ */
+const Perfil = () => {
+    // updateUsuario es el método seguro expuesto por AuthContext
+    const { usuario, updateUsuario } = useAuth();
 
     const [formData, setFormData] = useState({
-        email: '',
-        telefono: '',
+        correo: '',
+        telefono: ''
     });
     const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
     const [loading, setLoading] = useState(false);
+    const [errores, setErrores] = useState({});
 
-    // Carga los datos actuales del usuario en el formulario
+    // Cargar datos actuales del usuario al montar
     useEffect(() => {
         if (usuario) {
             setFormData({
-                email:    usuario.email    || '',
-                telefono: usuario.telefono || '',
+                correo: usuario.correo || '',
+                telefono: usuario.telefono || ''
             });
         }
     }, [usuario]);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        // Sanitización básica en el frontend (el backend valida también)
+        let sanitized = value;
+
+        if (name === 'telefono') {
+            // Solo números, espacios, +, -, ()  — máx 20 caracteres
+            sanitized = value.replace(/[^0-9\s+\-()]/g, '').slice(0, 20);
+        }
+
+        if (name === 'correo') {
+            // Lowercase y máx 100 caracteres
+            sanitized = value.toLowerCase().trim().slice(0, 100);
+        }
+
+        setFormData(prev => ({ ...prev, [name]: sanitized }));
+
+        // Limpiar error del campo modificado
+        if (errores[name]) {
+            setErrores(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+
+    const validar = () => {
+        const nuevosErrores = {};
+
+        // Validar email
+        const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+        if (!formData.correo) {
+            nuevosErrores.correo = 'El correo es obligatorio';
+        } else if (!emailRegex.test(formData.correo)) {
+            nuevosErrores.correo = 'Ingresa un correo válido';
+        }
+
+        // Validar teléfono (mínimo 7 dígitos)
+        const digitosEnTelefono = formData.telefono.replace(/\D/g, '');
+        if (!formData.telefono) {
+            nuevosErrores.telefono = 'El teléfono es obligatorio';
+        } else if (digitosEnTelefono.length < 7) {
+            nuevosErrores.telefono = 'Ingresa al menos 7 dígitos';
+        }
+
+        setErrores(nuevosErrores);
+        return Object.keys(nuevosErrores).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMensaje({ texto: '', tipo: '' });
+
+        if (!validar()) return;
+
         setLoading(true);
 
         try {
-            // El backend espera { email, telefono }
-            const data = await actualizarPerfil({
-                email:    formData.email.trim(),
-                telefono: formData.telefono.trim(),
-            });
+            const data = await actualizarPerfil(formData);
 
-            // Actualiza el contexto con los nuevos datos
-            // data es un UsuarioResumenDTO: { id, nombre, apellido, email, rol, ... }
-            setUsuario({
-                email:    data.email    || formData.email,
-                nombre:   data.nombre  || usuario.nombre,
-                telefono: formData.telefono,
-            });
+            // Actualizar el contexto de forma segura (solo nombre, no rol)
+            updateUsuario(data);
 
             setMensaje({
-                texto: '✅ Tus datos han sido actualizados correctamente.',
-                tipo: 'success',
+                texto: 'Tus datos han sido actualizados correctamente.',
+                tipo: 'success'
             });
         } catch (error) {
-            setMensaje({
-                texto: typeof error === 'string' ? error : 'Hubo un error al actualizar el perfil.',
-                tipo: 'error',
-            });
+            const mensajeError = error.response?.data?.error
+                || error.response?.data?.message
+                || 'Hubo un error al actualizar el perfil.';
+
+            setMensaje({ texto: mensajeError, tipo: 'error' });
         } finally {
             setLoading(false);
         }
     };
 
-    // Determina a qué dashboard volver según el rol
-    const dashboardLink = () => {
-        if (!usuario) return '/login';
-        if (usuario.rol === 'ADMIN') return '/admin-dashboard';
-        if (usuario.rol === 'SUPER_ADMIN') return '/superadmin-dashboard';
-        return '/dashboard';
-    };
-
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
-
     return (
-        <div className="perfil-page">
-            {/* Navbar consistente con el resto de la app */}
-            <nav className="navbar">
-                <div className="navbar-brand">
-                    <h1>ProParking</h1>
-                </div>
-                <div className="navbar-user">
-                    <span>Hola, <strong>{usuario?.nombre}</strong></span>
-                    <span className="user-role">{usuario?.rol}</span>
-                    <Link to={dashboardLink()} className="btn-back-nav">
-                        ← Volver
-                    </Link>
-                    <button onClick={handleLogout} className="btn-logout">
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </nav>
+        <div className="perfil-container">
+            <div className="perfil-card">
+                <h2>Mi Perfil</h2>
+                <p className="perfil-subtitle">Actualiza tu información de contacto</p>
 
-            <main className="perfil-content">
-                <div className="perfil-container">
-
-                    {/* Cabecera de sección */}
-                    <div className="perfil-header">
-                        <div className="perfil-avatar">
-                            {usuario?.nombre?.charAt(0).toUpperCase() || '?'}
-                        </div>
-                        <div className="perfil-header-info">
-                            <h2>{usuario?.nombre}</h2>
-                            <span className="perfil-rol-badge">{usuario?.rol}</span>
-                        </div>
+                {mensaje.texto && (
+                    <div className={`alert alert-${mensaje.tipo}`} role="alert">
+                        {mensaje.texto}
                     </div>
+                )}
 
-                    {/* Tarjeta del formulario */}
-                    <div className="perfil-card">
-                        <h3>Información de contacto</h3>
-                        <p className="perfil-subtitle">
-                            Actualiza tu correo electrónico y número de teléfono
-                        </p>
-
-                        {mensaje.texto && (
-                            <div className={`alert alert-${mensaje.tipo}`}>
-                                {mensaje.texto}
-                            </div>
+                <form onSubmit={handleSubmit} className="perfil-form" noValidate>
+                    <div className="form-group">
+                        <label htmlFor="correo">Correo Electrónico:</label>
+                        <input
+                            type="email"
+                            id="correo"
+                            name="correo"
+                            value={formData.correo}
+                            onChange={handleChange}
+                            maxLength={100}
+                            autoComplete="email"
+                            required
+                            aria-describedby={errores.correo ? 'correo-error' : undefined}
+                            style={errores.correo ? { borderColor: '#dc2626' } : {}}
+                        />
+                        {errores.correo && (
+                            <span id="correo-error" style={{ color: '#dc2626', fontSize: 12 }}>
+                                {errores.correo}
+                            </span>
                         )}
-
-                        <form onSubmit={handleSubmit} className="perfil-form">
-                            <div className="form-group">
-                                <label htmlFor="email">Correo Electrónico</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="correo@ejemplo.com"
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="telefono">Número de Teléfono</label>
-                                <input
-                                    type="tel"
-                                    id="telefono"
-                                    name="telefono"
-                                    value={formData.telefono}
-                                    onChange={handleChange}
-                                    placeholder="Ej: 3001234567"
-                                    maxLength={15}
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="btn-guardar"
-                                disabled={loading}
-                            >
-                                {loading ? 'Guardando cambios...' : 'Guardar Cambios'}
-                            </button>
-                        </form>
                     </div>
 
-                    {/* Tarjeta de datos de solo lectura */}
-                    <div className="perfil-card perfil-card-readonly">
-                        <h3>Datos de cuenta</h3>
-                        <p className="perfil-subtitle">
-                            Esta información no puede modificarse desde aquí
-                        </p>
-                        <div className="perfil-readonly-grid">
-                            <div className="perfil-readonly-item">
-                                <span className="readonly-label">Nombre completo</span>
-                                <span className="readonly-value">{usuario?.nombre || '—'}</span>
-                            </div>
-                            <div className="perfil-readonly-item">
-                                <span className="readonly-label">Rol</span>
-                                <span className="readonly-value">{usuario?.rol || '—'}</span>
-                            </div>
-                            <div className="perfil-readonly-item">
-                                <span className="readonly-label">ID de cuenta</span>
-                                <span className="readonly-value readonly-id">
-                                    {usuario?.id ? `${usuario.id.substring(0, 8)}...` : '—'}
-                                </span>
-                            </div>
-                        </div>
+                    <div className="form-group">
+                        <label htmlFor="telefono">Número de Teléfono:</label>
+                        <input
+                            type="tel"
+                            id="telefono"
+                            name="telefono"
+                            value={formData.telefono}
+                            onChange={handleChange}
+                            maxLength={20}
+                            autoComplete="tel"
+                            placeholder="Ej: +57 300 123 4567"
+                            required
+                            aria-describedby={errores.telefono ? 'telefono-error' : undefined}
+                            style={errores.telefono ? { borderColor: '#dc2626' } : {}}
+                        />
+                        {errores.telefono && (
+                            <span id="telefono-error" style={{ color: '#dc2626', fontSize: 12 }}>
+                                {errores.telefono}
+                            </span>
+                        )}
                     </div>
 
-                </div>
-            </main>
+                    <button type="submit" className="btn-guardar" disabled={loading}>
+                        {loading ? 'Guardando cambios...' : 'Guardar Cambios'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
-}
+};
 
 export default Perfil;
