@@ -9,7 +9,6 @@ function Navbar() {
     const location = useLocation();
 
     const [menuAbierto, setMenuAbierto] = useState(false);
-    const [cerrando, setCerrando] = useState(false);
     const menuRef = useRef(null);
 
     // Cerrar menú al hacer click fuera
@@ -63,16 +62,10 @@ function Navbar() {
         SUPER_ADMIN: { bg: '#ede9fe', color: '#7c3aed' },
     }[usuario?.rol] || { bg: '#e2e8f0', color: '#475569' };
 
-    const handleLogout = async () => {
-        if (cerrando) return;
-        setCerrando(true);
+    const handleLogout = () => {
         setMenuAbierto(false);
-        try {
-            await logout();
-            navigate('/login');
-        } catch {
-            setCerrando(false);
-        }
+        logout();
+        navigate('/login');
     };
 
     const handleVolver = () => navigate(volver.ruta);
@@ -150,7 +143,6 @@ function Navbar() {
 
                                 <div className="global-navbar__divider" />
 
-                                {/* Acciones */}
                                 <Link
                                     to="/perfil"
                                     className="global-navbar__menu-item"
@@ -164,11 +156,9 @@ function Navbar() {
                                 <button
                                     className="global-navbar__menu-item global-navbar__menu-item--danger"
                                     onClick={handleLogout}
-                                    disabled={cerrando}
                                     role="menuitem"
                                 >
-                                    <span>{cerrando ? '⏳' : '🚪'}</span>
-                                    {cerrando ? 'Cerrando sesión...' : 'Cerrar Sesión'}
+                                    <span>🚪</span> Cerrar Sesión
                                 </button>
                             </div>
                         )}
