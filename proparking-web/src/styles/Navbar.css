@@ -1,0 +1,339 @@
+/* ==========================================================================
+   GLOBAL NAVBAR — ProParking
+   Navbar estática en la parte superior de todas las páginas autenticadas.
+   ========================================================================== */
+
+.global-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    /* Evitar que el contenido pase por debajo en scroll */
+    will-change: transform;
+}
+
+.global-navbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    gap: 16px;
+}
+
+/* ── Lado izquierdo ────────────────────────────────────────────────────────── */
+
+.global-navbar__left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.global-navbar__logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+
+.global-navbar__logo:hover {
+    opacity: 0.85;
+}
+
+.global-navbar__logo-icon {
+    width: 34px;
+    height: 34px;
+    background: #1e40af;
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.global-navbar__logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e40af;
+    letter-spacing: -0.3px;
+}
+
+.global-navbar__back {
+    background: none;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.global-navbar__back:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+/* ── Lado derecho ──────────────────────────────────────────────────────────── */
+
+.global-navbar__right {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.global-navbar__user-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 6px 12px 6px 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #1e293b;
+}
+
+.global-navbar__user-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.global-navbar__avatar {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.global-navbar__username {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.global-navbar__chevron {
+    font-size: 12px;
+    color: #94a3b8;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.global-navbar__chevron.open {
+    transform: rotate(180deg);
+}
+
+/* ── Dropdown ──────────────────────────────────────────────────────────────── */
+
+.global-navbar__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    z-index: 1100;
+    animation: dropdown-in 0.15s ease;
+}
+
+@keyframes dropdown-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Info del usuario dentro del dropdown ── */
+
+.global-navbar__user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #f8fafc;
+}
+
+.global-navbar__user-avatar-lg {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.global-navbar__user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0; /* permite truncar texto */
+}
+
+.global-navbar__user-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.global-navbar__user-email {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.global-navbar__user-rol {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 2px;
+    width: fit-content;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* ── Items del menú ── */
+
+.global-navbar__divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 0;
+}
+
+.global-navbar__menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    background: none;
+    border: none;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.12s;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.global-navbar__menu-item:hover {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.global-navbar__menu-item--danger {
+    color: #dc2626;
+}
+
+.global-navbar__menu-item--danger:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.global-navbar__menu-item:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Nav para visitantes (landing) ── */
+
+.global-navbar__guest-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.global-navbar__guest-link {
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s;
+    color: #1e40af;
+    border: 1px solid #1e40af;
+}
+
+.global-navbar__guest-link:hover {
+    background: #eff6ff;
+}
+
+.global-navbar__guest-link--primary {
+    background: #1e40af;
+    color: white;
+}
+
+.global-navbar__guest-link--primary:hover {
+    background: #1d4ed8;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+    .global-navbar__inner {
+        padding: 0 16px;
+        height: 56px;
+    }
+
+    .global-navbar__logo-text {
+        font-size: 16px;
+    }
+
+    .global-navbar__username {
+        display: none; /* Solo mostrar avatar en móvil */
+    }
+
+    .global-navbar__back {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .global-navbar__dropdown {
+        width: 260px;
+        right: -8px;
+    }
+
+    .global-navbar__guest-link {
+        padding: 7px 12px;
+        font-size: 13px;
+    }
+}
