@@ -1,80 +1,58 @@
 /* ==========================================================================
-   PERFIL PAGE — consistent with Dashboard.css design tokens
+   PERFIL — ProParking
    ========================================================================== */
 
-.perfil-page {
-    min-height: 100vh;
+.perfil-wrapper {
+    min-height: calc(100vh - 60px);
     background-color: #f8fafc;
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
 }
 
-/* Reutiliza .navbar, .navbar-brand, .navbar-user, .btn-logout, .user-role
-   que ya están definidos en Dashboard.css */
-
-.btn-back-nav {
-    background-color: #e2e8f0;
-    color: #475569;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    text-decoration: none;
-    transition: background-color 0.2s;
+.perfil-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: 520px;
+    padding: 32px;
 }
 
-.btn-back-nav:hover {
-    background-color: #cbd5e1;
-}
-
-/* ── Contenido principal ───────────────────────────────────────────── */
-
-.perfil-content {
-    padding: 30px;
-    flex: 1;
-}
-
-.perfil-container {
-    max-width: 620px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-/* ── Cabecera con avatar ───────────────────────────────────────────── */
-
+/* ── Header con avatar ── */
 .perfil-header {
     display: flex;
     align-items: center;
     gap: 20px;
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
 }
 
 .perfil-avatar {
     width: 64px;
     height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+    background-color: #2563eb;
     color: white;
-    font-size: 28px;
-    font-weight: 700;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.perfil-header-info h2 {
-    margin: 0 0 6px 0;
-    font-size: 22px;
+.perfil-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.perfil-nombre {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
     color: #1e293b;
 }
 
@@ -83,192 +61,127 @@
     font-size: 12px;
     font-weight: 700;
     padding: 3px 10px;
-    border-radius: 12px;
-    background-color: #e0e7ff;
-    color: #2563eb;
+    border-radius: 10px;
+    align-self: flex-start;
+}
+
+/* ── Divider ── */
+.perfil-divider {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 20px 0;
+}
+
+/* ── Títulos de sección ── */
+.perfil-section-title {
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
+    color: #94a3b8;
+    margin-bottom: 16px;
 }
 
-/* ── Tarjetas ──────────────────────────────────────────────────────── */
-
-.perfil-card {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
-    padding: 28px;
-}
-
-.perfil-card h3 {
-    margin: 0 0 4px 0;
-    font-size: 17px;
-    color: #1e293b;
-}
-
-.perfil-subtitle {
-    color: #64748b;
-    font-size: 13px;
-    margin: 0 0 24px 0;
-}
-
-/* ── Formulario ────────────────────────────────────────────────────── */
-
-.perfil-form .form-group {
-    margin-bottom: 18px;
-}
-
-.perfil-form label {
-    display: block;
-    margin-bottom: 6px;
-    color: #374151;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-.perfil-form input {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 14px;
-    box-sizing: border-box;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    color: #1e293b;
-    background-color: #fafafa;
-}
-
-.perfil-form input:focus {
-    border-color: #2563eb;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    background-color: white;
-}
-
-.btn-guardar {
-    width: 100%;
-    padding: 12px;
-    background-color: #1e40af;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-.btn-guardar:hover:not(:disabled) {
-    background-color: #1d4ed8;
-    transform: translateY(-1px);
-}
-
-.btn-guardar:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.btn-guardar:disabled {
-    background-color: #93c5fd;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* ── Alertas ───────────────────────────────────────────────────────── */
-
-.alert {
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.alert-success {
-    background-color: #dcfce7;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-}
-
-.alert-error {
-    background-color: #fee2e2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-}
-
-/* ── Tarjeta de solo lectura ───────────────────────────────────────── */
-
-.perfil-card-readonly {
-    background-color: #f8fafc;
-}
-
-.perfil-readonly-grid {
+/* ── Campos de info ── */
+.perfil-fields {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-top: 4px;
+    gap: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.perfil-readonly-item {
+.perfil-field {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background-color: white;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 12px;
 }
 
-.readonly-label {
+.perfil-field:last-child {
+    border-bottom: none;
+}
+
+.perfil-field-label {
     font-size: 13px;
     color: #64748b;
     font-weight: 500;
+    flex-shrink: 0;
 }
 
-.readonly-value {
+.perfil-field-value {
     font-size: 14px;
     color: #1e293b;
     font-weight: 600;
+    text-align: right;
+    word-break: break-all;
 }
 
-.readonly-id {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: #64748b;
-    background-color: #f1f5f9;
-    padding: 3px 8px;
-    border-radius: 4px;
+/* ── Caja de info seguridad ── */
+.perfil-info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
 }
 
-/* ── Responsive ────────────────────────────────────────────────────── */
+.perfil-info-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
 
-@media (max-width: 768px) {
-    .perfil-content {
-        padding: 16px;
-    }
+.perfil-info-text {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+}
 
-    .perfil-header {
-        padding: 20px;
-        gap: 14px;
-    }
+.perfil-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+}
 
-    .perfil-avatar {
-        width: 52px;
-        height: 52px;
-        font-size: 22px;
-    }
+.perfil-link:hover {
+    text-decoration: underline;
+}
 
-    .perfil-header-info h2 {
-        font-size: 18px;
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .perfil-wrapper {
+        padding: 20px 16px;
     }
 
     .perfil-card {
-        padding: 20px;
+        padding: 20px 16px;
     }
 
-    .perfil-readonly-item {
+    .perfil-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .perfil-nombre {
+        font-size: 17px;
+    }
+
+    .perfil-field {
         flex-direction: column;
         align-items: flex-start;
         gap: 4px;
+    }
+
+    .perfil-field-value {
+        text-align: left;
     }
 }
