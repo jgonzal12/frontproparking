@@ -163,15 +163,8 @@
 }
 
 @keyframes dropdown-in {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Info del usuario dentro del dropdown ── */
@@ -202,8 +195,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    min-width: 0;
-    /* permite truncar texto */
+    min-width: 0; /* permite truncar texto */
 }
 
 .global-navbar__user-name {
@@ -327,8 +319,7 @@
     }
 
     .global-navbar__username {
-        display: none;
-        /* Solo mostrar avatar en móvil */
+        display: none; /* Solo mostrar avatar en móvil */
     }
 
     .global-navbar__back {
