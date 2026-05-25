@@ -79,8 +79,7 @@ function Perfil() {
                     <span className="perfil-info-icon">🔒</span>
                     <div>
                         <p className="perfil-info-text">
-                            ¿Quieres cambiar tu contraseña? Puedes hacerlo desde la pantalla de
-                            recuperación de contraseña.
+                            ¿Quieres cambiar tu contraseña? Puedes hacerlo haciendo click en el boton.
                         </p>
                         <a href="/recuperar-password" className="perfil-link">
                             Cambiar contraseña →
