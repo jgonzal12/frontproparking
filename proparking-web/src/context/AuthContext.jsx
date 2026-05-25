@@ -4,15 +4,11 @@ import { cerrarSesion } from '../services/authService';
 const AuthContext = createContext(null);
 
 /**
- * AuthProvider — Contexto de autenticación seguro.
+ * AuthContext — expone: usuario, login, logout, updateUsuario
  *
- * Cambios respecto a la versión anterior:
- * 1. NO expone setUsuario directamente (evita que cualquier componente
- *    modifique el estado de autenticación arbitrariamente).
- * 2. La actualización del perfil se hace a través de updateUsuario,
- *    que solo permite cambiar campos no críticos (correo, teléfono).
- * 3. El token JWT viaja en cookie HttpOnly — no se almacena en localStorage.
- * 4. localStorage solo guarda datos no sensibles: rol, nombre, id.
+ * usuario contiene: { id, rol, nombre, apellido, email }
+ * El JWT viaja en cookie HttpOnly — nunca en localStorage.
+ * localStorage solo guarda datos no sensibles para rehidratar el estado.
  */
 export function AuthProvider({ children }) {
 
@@ -20,70 +16,58 @@ export function AuthProvider({ children }) {
         try {
             const rol = localStorage.getItem('rol');
             const nombre = localStorage.getItem('nombre');
+            const apellido = localStorage.getItem('apellido');
+            const email = localStorage.getItem('email');
             const id = localStorage.getItem('id');
-            // Solo restaurar si hay datos completos
             if (!rol || !nombre || !id) return null;
-            return { rol, nombre, id };
+            return { rol, nombre, apellido: apellido || '', email: email || '', id };
         } catch {
-            // localStorage puede fallar en modo privado/incógnito
             return null;
         }
     });
 
-    /**
-     * login: llamado después de un login exitoso.
-     * Solo persiste datos no sensibles — el JWT va en cookie HttpOnly.
-     */
     const login = useCallback((data) => {
         try {
             localStorage.setItem('rol', data.rol);
             localStorage.setItem('nombre', data.nombre);
+            localStorage.setItem('apellido', data.apellido || '');
+            localStorage.setItem('email', data.email || '');
             localStorage.setItem('id', String(data.id));
-        } catch {
-            // Si localStorage falla, el usuario igual puede usar la app
-            // mientras no cierre la pestaña (estado en memoria)
-        }
-        setUsuario({ rol: data.rol, nombre: data.nombre, id: data.id });
+        } catch { /* ignore */ }
+
+        setUsuario({
+            rol: data.rol,
+            nombre: data.nombre,
+            apellido: data.apellido || '',
+            email: data.email || '',
+            id: data.id,
+        });
     }, []);
 
-    /**
-     * logout: cierra sesión en servidor (revoca JWT) y limpia el estado local.
-     */
     const logout = useCallback(async () => {
-        try {
-            await cerrarSesion(); // invalida el JWT en el servidor
-        } catch {
-            // Si falla el logout en el servidor, igual limpiamos local
-            console.warn('No se pudo invalidar el JWT en el servidor');
-        }
-        try {
-            localStorage.clear();
-        } catch {
-            // ignore
-        }
+        try { await cerrarSesion(); } catch { /* ignore */ }
+        try { localStorage.clear(); } catch { /* ignore */ }
         setUsuario(null);
     }, []);
 
     /**
-     * updateUsuario: actualiza datos del perfil (solo campos no críticos).
-     * El Perfil.jsx debe usar esto en lugar de setUsuario directamente.
-     *
-     * Solo se permite actualizar nombre y correo — el rol NUNCA se actualiza
-     * desde el frontend para evitar escalada de privilegios.
+     * updateUsuario — actualiza solo nombre/apellido/email, NUNCA el rol.
+     * Usar desde Perfil.jsx después de actualizar en el backend.
      */
     const updateUsuario = useCallback((data) => {
         setUsuario(prev => {
             if (!prev) return prev;
             const updated = {
                 ...prev,
-                // Solo permitir actualizar nombre, NO el rol ni el id
-                nombre: data.nombre || prev.nombre,
+                nombre: data.nombre ?? prev.nombre,
+                apellido: data.apellido ?? prev.apellido,
+                email: data.email ?? prev.email,
             };
             try {
                 localStorage.setItem('nombre', updated.nombre);
-            } catch {
-                // ignore
-            }
+                localStorage.setItem('apellido', updated.apellido);
+                localStorage.setItem('email', updated.email);
+            } catch { /* ignore */ }
             return updated;
         });
     }, []);
@@ -97,9 +81,7 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
     const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth debe usarse dentro de AuthProvider');
-    }
+    if (!context) throw new Error('useAuth debe usarse dentro de AuthProvider');
     return context;
 }
 
