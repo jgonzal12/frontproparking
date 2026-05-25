@@ -3,15 +3,6 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Navbar.css';
 
-/**
- * Navbar global — aparece en todas las páginas autenticadas y en Landing.
- *
- * Funciones:
- * - Logo siempre lleva al inicio correspondiente según rol
- * - Menú de usuario con info completa (nombre, apellido, email, rol)
- * - Botón "Volver" inteligente según la ruta actual
- * - Bloqueo de doble click en logout
- */
 function Navbar() {
     const { usuario, logout } = useAuth();
     const navigate = useNavigate();
@@ -37,8 +28,6 @@ function Navbar() {
         setMenuAbierto(false);
     }, [location.pathname]);
 
-    // ── Lógica de navegación ──────────────────────────────────────────────────
-
     // A dónde va el logo según el rol
     const homeRuta = () => {
         if (!usuario) return '/';
@@ -55,7 +44,7 @@ function Navbar() {
         if (path === '/reportes') return { label: '← Panel Admin', ruta: '/admin-dashboard' };
         if (path === '/perfil') return { label: '← Volver', ruta: homeRuta() };
         if (path === '/restablecer-password') return { label: '← Recuperar', ruta: '/recuperar-password' };
-        return null; // Sin botón volver en dashboards principales
+        return null;
     };
 
     const volver = volverConfig();
@@ -74,10 +63,8 @@ function Navbar() {
         SUPER_ADMIN: { bg: '#ede9fe', color: '#7c3aed' },
     }[usuario?.rol] || { bg: '#e2e8f0', color: '#475569' };
 
-    // ── Handlers ──────────────────────────────────────────────────────────────
-
     const handleLogout = async () => {
-        if (cerrando) return; // Bloquear doble click
+        if (cerrando) return;
         setCerrando(true);
         setMenuAbierto(false);
         try {
@@ -90,7 +77,7 @@ function Navbar() {
 
     const handleVolver = () => navigate(volver.ruta);
 
-    // ── Páginas sin navbar (login, register, verify, recover) ─────────────────
+    // Páginas sin navbar
     const rutasSinNavbar = ['/login', '/register', '/verify', '/recuperar-password', '/restablecer-password'];
     if (rutasSinNavbar.includes(location.pathname)) return null;
 
@@ -125,7 +112,6 @@ function Navbar() {
                             aria-expanded={menuAbierto}
                             aria-haspopup="true"
                         >
-                            {/* Avatar con inicial */}
                             <span className="global-navbar__avatar">
                                 {(usuario.nombre || 'U')[0].toUpperCase()}
                             </span>
@@ -171,14 +157,6 @@ function Navbar() {
                                     role="menuitem"
                                 >
                                     <span>👤</span> Mi Perfil
-                                </Link>
-
-                                <Link
-                                    to={homeRuta()}
-                                    className="global-navbar__menu-item"
-                                    role="menuitem"
-                                >
-                                    <span>🏠</span> Inicio
                                 </Link>
 
                                 <div className="global-navbar__divider" />

@@ -15,14 +15,6 @@ function Landing() {
 
     return (
         <div className="landing-container">
-            <header className="landing-header">
-                <div className="landing-logo">ProParking</div>
-                <nav className="landing-nav">
-                    <Link to="/login" className="btn-outline">Iniciar Sesión</Link>
-                    <Link to="/register" className="btn-solid">Registrarse</Link>
-                </nav>
-            </header>
-
             <main className="landing-hero">
                 <h1>Tu parqueadero, <br /> más inteligente y seguro</h1>
                 <p>
