@@ -14,11 +14,11 @@ export function AuthProvider({ children }) {
 
     const [usuario, setUsuario] = useState(() => {
         try {
-            const rol = localStorage.getItem('rol');
-            const nombre = localStorage.getItem('nombre');
+            const rol      = localStorage.getItem('rol');
+            const nombre   = localStorage.getItem('nombre');
             const apellido = localStorage.getItem('apellido');
-            const email = localStorage.getItem('email');
-            const id = localStorage.getItem('id');
+            const email    = localStorage.getItem('email');
+            const id       = localStorage.getItem('id');
             if (!rol || !nombre || !id) return null;
             return { rol, nombre, apellido: apellido || '', email: email || '', id };
         } catch {
@@ -28,19 +28,19 @@ export function AuthProvider({ children }) {
 
     const login = useCallback((data) => {
         try {
-            localStorage.setItem('rol', data.rol);
-            localStorage.setItem('nombre', data.nombre);
+            localStorage.setItem('rol',      data.rol);
+            localStorage.setItem('nombre',   data.nombre);
             localStorage.setItem('apellido', data.apellido || '');
-            localStorage.setItem('email', data.email || '');
-            localStorage.setItem('id', String(data.id));
+            localStorage.setItem('email',    data.email    || '');
+            localStorage.setItem('id',       String(data.id));
         } catch { /* ignore */ }
 
         setUsuario({
-            rol: data.rol,
-            nombre: data.nombre,
+            rol:      data.rol,
+            nombre:   data.nombre,
             apellido: data.apellido || '',
-            email: data.email || '',
-            id: data.id,
+            email:    data.email    || '',
+            id:       data.id,
         });
     }, []);
 
@@ -59,14 +59,14 @@ export function AuthProvider({ children }) {
             if (!prev) return prev;
             const updated = {
                 ...prev,
-                nombre: data.nombre ?? prev.nombre,
+                nombre:   data.nombre   ?? prev.nombre,
                 apellido: data.apellido ?? prev.apellido,
-                email: data.email ?? prev.email,
+                email:    data.email    ?? prev.email,
             };
             try {
-                localStorage.setItem('nombre', updated.nombre);
+                localStorage.setItem('nombre',   updated.nombre);
                 localStorage.setItem('apellido', updated.apellido);
-                localStorage.setItem('email', updated.email);
+                localStorage.setItem('email',    updated.email);
             } catch { /* ignore */ }
             return updated;
         });

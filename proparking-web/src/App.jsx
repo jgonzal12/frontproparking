@@ -20,20 +20,20 @@ function App() {
         <AuthProvider>
             <Router>
                 {/*
-                  Navbar global: se muestra en todas las rutas EXCEPTO
-                  login, register, verify y recuperar/restablecer password.
-                  La lógica de exclusión está dentro del propio Navbar.
+                Navbar global: se muestra en todas las rutas EXCEPTO
+                login, register, verify y recuperar/restablecer password.
+                La lógica de exclusión está dentro del propio Navbar.
                 */}
                 <Navbar />
 
                 <Routes>
                     {/* ── Rutas públicas ─────────────────────────────── */}
-                    <Route path="/"                      element={<Landing />} />
-                    <Route path="/login"                 element={<Login />} />
-                    <Route path="/register"              element={<Register />} />
-                    <Route path="/verify"                element={<Verify />} />
-                    <Route path="/recuperar-password"    element={<RecuperarPassword />} />
-                    <Route path="/restablecer-password"  element={<RestablecerPassword />} />
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/verify" element={<Verify />} />
+                    <Route path="/recuperar-password" element={<RecuperarPassword />} />
+                    <Route path="/restablecer-password" element={<RestablecerPassword />} />
 
                     {/* ── Perfil (todas los roles autenticados) ──────── */}
                     <Route path="/perfil" element={<Perfil />} />
@@ -46,13 +46,13 @@ function App() {
                     {/* ── Admin ──────────────────────────────────────── */}
                     <Route element={<PrivateRoute allowedRoles={['ADMIN']} />}>
                         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                        <Route path="/reportes"        element={<Reportes />} />
+                        <Route path="/reportes" element={<Reportes />} />
                     </Route>
 
                     {/* ── Super Admin ────────────────────────────────── */}
                     <Route element={<PrivateRoute allowedRoles={['SUPER_ADMIN']} />}>
                         <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} />
-                        <Route path="/reportes"             element={<Reportes />} />
+                        <Route path="/reportes" element={<Reportes />} />
                     </Route>
 
                     {/* ── Fallback ───────────────────────────────────── */}
