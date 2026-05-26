@@ -1,95 +1,149 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { actualizarPerfil } from '../services/usuarioService';
 import '../styles/Perfil.css';
 
-const rolLabel = {
-    CLIENTE: 'Cliente',
-    ADMIN: 'Administrador',
-    SUPER_ADMIN: 'Super Admin',
-};
+const Perfil = () => {
+    const navigate = useNavigate();
+    const { usuario, actualizarUsuario, logout } = useAuth();
 
-const rolColor = {
-    CLIENTE: { bg: '#e0e7ff', color: '#2563eb' },
-    ADMIN: { bg: '#fef08a', color: '#854d0e' },
-    SUPER_ADMIN: { bg: '#ede9fe', color: '#7c3aed' },
-};
+    const [formData, setFormData] = useState({
+        correo:   '',
+        telefono: '',
+    });
+    const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
+    const [loading, setLoading]  = useState(false);
 
-function Perfil() {
-    const { usuario } = useAuth();
+    useEffect(() => {
+        if (usuario) {
+            setFormData({
+                correo:   usuario.email    || '',
+                telefono: usuario.telefono || '',
+            });
+        }
+    }, [usuario]);
 
-    if (!usuario) return null;
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-    const colores = rolColor[usuario.rol] || { bg: '#e2e8f0', color: '#475569' };
-    const inicial = (usuario.nombre || 'U')[0].toUpperCase();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMensaje({ texto: '', tipo: '' });
+        setLoading(true);
+        try {
+            const data = await actualizarPerfil(formData);
+            // Actualizar contexto con los nuevos datos devueltos por el backend
+            actualizarUsuario({
+                email:    data.email    || formData.correo,
+                telefono: data.telefono || formData.telefono,
+            });
+            setMensaje({ texto: 'Tus datos han sido actualizados correctamente.', tipo: 'success' });
+        } catch (error) {
+            setMensaje({
+                texto: error.response?.data?.message || error.response?.data?.error || 'Hubo un error al actualizar el perfil.',
+                tipo: 'error',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
+
+    // Determina la ruta de regreso según el rol
+    const handleVolver = () => {
+        if (usuario?.rol === 'SUPER_ADMIN') navigate('/superadmin-dashboard');
+        else if (usuario?.rol === 'ADMIN')  navigate('/admin-dashboard');
+        else                                navigate('/dashboard');
+    };
 
     return (
-        <div className="perfil-wrapper">
+        <div className="perfil-container">
             <div className="perfil-card">
+                {/* Encabezado con avatar de iniciales */}
+                <div className="perfil-avatar">
+                    {usuario?.nombre?.charAt(0).toUpperCase()}
+                    {usuario?.apellido?.charAt(0).toUpperCase()}
+                </div>
 
-                {/* ── Avatar y nombre ── */}
-                <div className="perfil-header">
-                    <div className="perfil-avatar">{inicial}</div>
-                    <div className="perfil-header-info">
-                        <h2 className="perfil-nombre">
-                            {usuario.nombre} {usuario.apellido}
-                        </h2>
-                        <span
-                            className="perfil-rol-badge"
-                            style={{ backgroundColor: colores.bg, color: colores.color }}
-                        >
-                            {rolLabel[usuario.rol] || usuario.rol}
+                <h2>Mi Perfil</h2>
+                <p className="perfil-subtitle">Gestiona tu información de contacto</p>
+
+                {/* Datos no editables */}
+                <div className="perfil-info-readonly">
+                    <div className="perfil-info-row">
+                        <span className="perfil-info-label">Nombre completo</span>
+                        <span className="perfil-info-value">
+                            {usuario?.nombre || '—'} {usuario?.apellido || ''}
+                        </span>
+                    </div>
+                    <div className="perfil-info-row">
+                        <span className="perfil-info-label">Rol</span>
+                        <span className={`perfil-rol perfil-rol--${(usuario?.rol || '').toLowerCase()}`}>
+                            {usuario?.rol || '—'}
                         </span>
                     </div>
                 </div>
 
+                {/* Divider */}
                 <div className="perfil-divider" />
 
-                {/* ── Información ── */}
-                <div className="perfil-section-title">Información de la cuenta</div>
+                <p className="perfil-section-title">Datos editables</p>
 
-                <div className="perfil-fields">
-                    <div className="perfil-field">
-                        <span className="perfil-field-label">Nombre</span>
-                        <span className="perfil-field-value">{usuario.nombre}</span>
+                {mensaje.texto && (
+                    <div className={`alert alert-${mensaje.tipo}`}>
+                        {mensaje.texto}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="perfil-form">
+                    <div className="form-group">
+                        <label htmlFor="correo">Correo electrónico</label>
+                        <input
+                            type="email"
+                            id="correo"
+                            name="correo"
+                            value={formData.correo}
+                            onChange={handleChange}
+                            required
+                            placeholder="tu@correo.com"
+                        />
                     </div>
 
-                    <div className="perfil-field">
-                        <span className="perfil-field-label">Apellido</span>
-                        <span className="perfil-field-value">{usuario.apellido || '—'}</span>
+                    <div className="form-group">
+                        <label htmlFor="telefono">Número de teléfono</label>
+                        <input
+                            type="text"
+                            id="telefono"
+                            name="telefono"
+                            value={formData.telefono}
+                            onChange={handleChange}
+                            placeholder="Ej: 3001234567"
+                        />
                     </div>
 
-                    <div className="perfil-field">
-                        <span className="perfil-field-label">Correo electrónico</span>
-                        <span className="perfil-field-value">{usuario.email}</span>
-                    </div>
+                    <button type="submit" className="btn-guardar" disabled={loading}>
+                        {loading ? 'Guardando cambios...' : 'Guardar Cambios'}
+                    </button>
+                </form>
 
-                    <div className="perfil-field">
-                        <span className="perfil-field-label">Rol</span>
-                        <span className="perfil-field-value">
-                            {rolLabel[usuario.rol] || usuario.rol}
-                        </span>
-                    </div>
+                {/* Acciones secundarias */}
+                <div className="perfil-actions">
+                    <button onClick={handleVolver} className="btn-volver">
+                        ← Volver al dashboard
+                    </button>
+                    <button onClick={handleLogout} className="btn-cerrar-sesion">
+                        Cerrar sesión
+                    </button>
                 </div>
-
-                <div className="perfil-divider" />
-
-                {/* ── Cambiar contraseña ── */}
-                <div className="perfil-section-title">Seguridad</div>
-
-                <div className="perfil-info-box">
-                    <span className="perfil-info-icon">🔒</span>
-                    <div>
-                        <p className="perfil-info-text">
-                            ¿Quieres cambiar tu contraseña? Puedes hacerlo haciendo click en el boton.
-                        </p>
-                        <a href="/recuperar-password" className="perfil-link">
-                            Cambiar contraseña →
-                        </a>
-                    </div>
-                </div>
-
             </div>
         </div>
     );
-}
+};
 
 export default Perfil;
