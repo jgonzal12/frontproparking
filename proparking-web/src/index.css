@@ -1,11 +1,17 @@
-body, html, #root {
+/* Reset global — no restringir ancho ni centrar el root */
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  box-sizing: border-box;
 }
 
-*, *::before, *::after {
-  box-sizing: inherit;
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
 }

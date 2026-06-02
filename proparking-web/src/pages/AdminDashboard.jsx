@@ -4,13 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { obtenerTodosLosIngresos } from '../services/ingresoService';
 import { registrarSalida } from '../services/pagoService';
 import { obtenerParqueaderos, actualizarTarifas } from '../services/parqueaderoService';
-import { useButtonLock, useManyButtonLocks } from '../hooks/useButtonLock';
 import '../styles/Dashboard.css';
 import api from '../api/axios';
 
 function AdminDashboard() {
     const navigate = useNavigate();
-    const { usuario } = useAuth();
+    const { usuario, logout } = useAuth();
 
     const [ingresos, setIngresos] = useState([]);
     const [parqueaderos, setParqueaderos] = useState([]);
@@ -26,11 +25,6 @@ function AdminDashboard() {
     const [editandoParqueadero, setEditandoParqueadero] = useState(null);
     const [tarifaEdicion, setTarifaEdicion] = useState({ tarifaCarro: '', tarifaMoto: '' });
 
-    // ── Locks anti-doble-click ──────────────────────────────────────────────
-    const [procesandoPago, ejecutarProcesarPago] = useButtonLock();
-    const [guardandoTarifas, ejecutarGuardarTarifas] = useButtonLock();
-
-    // ── Carga de datos ──────────────────────────────────────────────────────
     const cargarDatos = async () => {
         try {
             setCargando(true);
@@ -42,7 +36,7 @@ function AdminDashboard() {
             setIngresos(dataIngresos);
             setParqueaderos(dataParqueaderos);
             if (dataMetricas) setMetricas(dataMetricas);
-        } catch {
+        } catch (err) {
             setError('Error al cargar la información del sistema');
         } finally {
             setCargando(false);
@@ -51,26 +45,25 @@ function AdminDashboard() {
 
     useEffect(() => { cargarDatos(); }, []);
 
+    const handleLogout = () => { logout(); navigate('/login'); };
+
     const abrirModalCobro = (ingreso) => {
         setIngresoSeleccionado(ingreso);
         setMostrarModalPago(true);
     };
 
-    const handleProcesarSalida = (e) => {
+    const handleProcesarSalida = async (e) => {
         e.preventDefault();
-        ejecutarProcesarPago(async () => {
-            try {
-                await registrarSalida(ingresoSeleccionado.id, metodoPago);
-                setMostrarModalPago(false);
-                setIngresoSeleccionado(null);
-                setExito('✅ Salida del vehículo registrada exitosamente');
-                setTimeout(() => setExito(''), 4000);
-                cargarDatos();
-            } catch (err) {
-                setError('Error al procesar salida: ' + err);
-                throw err;
-            }
-        });
+        try {
+            await registrarSalida(ingresoSeleccionado.id, metodoPago);
+            setMostrarModalPago(false);
+            setIngresoSeleccionado(null);
+            setExito('✅ Salida del vehículo registrada exitosamente');
+            setTimeout(() => setExito(''), 4000);
+            cargarDatos();
+        } catch (err) {
+            setError('Error al procesar salida: ' + err);
+        }
     };
 
     const abrirEdicionTarifa = (p) => {
@@ -78,21 +71,14 @@ function AdminDashboard() {
         setTarifaEdicion({ tarifaCarro: p.tarifaCarro, tarifaMoto: p.tarifaMoto });
     };
 
-    const handleGuardarTarifas = (parqueaderoId) => {
-        ejecutarGuardarTarifas(async () => {
-            try {
-                await actualizarTarifas(
-                    parqueaderoId,
-                    Number(tarifaEdicion.tarifaCarro),
-                    Number(tarifaEdicion.tarifaMoto)
-                );
-                setEditandoParqueadero(null);
-                cargarDatos();
-            } catch (err) {
-                setError('Error al actualizar tarifas: ' + err);
-                throw err;
-            }
-        });
+    const handleGuardarTarifas = async (parqueaderoId) => {
+        try {
+            await actualizarTarifas(parqueaderoId, Number(tarifaEdicion.tarifaCarro), Number(tarifaEdicion.tarifaMoto));
+            setEditandoParqueadero(null);
+            cargarDatos();
+        } catch (err) {
+            setError('Error al actualizar tarifas: ' + err);
+        }
     };
 
     const ingresosActivos = ingresos.filter(i => i.estado === 'ACTIVO');
@@ -101,7 +87,19 @@ function AdminDashboard() {
 
     return (
         <div className="dashboard-layout">
-            {/* La navbar global ya está en App.jsx — no duplicar aquí */}
+            <nav className="navbar">
+                <div className="navbar-brand">
+                    <h1>ProParking <span className="admin-tag">Admin</span></h1>
+                </div>
+                <div className="navbar-user">
+                    <span className="navbar-saludo">Hola, <strong>{usuario?.nombre}</strong></span>
+                    <span className="user-role">{usuario?.rol}</span>
+                    <button onClick={() => navigate('/reportes')} className="btn-reportes">
+                        📊 Reportes
+                    </button>
+                    <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+                </div>
+            </nav>
 
             <main className="dashboard-content">
                 <h2>Gestión Operativa</h2>
@@ -113,24 +111,38 @@ function AdminDashboard() {
                     <>
                         {/* MÉTRICAS */}
                         <div className="metricas-grid">
-                            {[
-                                { icono: '🚗', valor: metricas.vehiculosActivos, label: 'Vehículos activos' },
-                                { icono: '📅', valor: metricas.ingresosHoy, label: 'Ingresos hoy' },
-                                { icono: '💰', valor: `$${Number(metricas.totalRecaudadoHoy).toLocaleString()}`, label: 'Recaudado hoy' },
-                                { icono: '🅿️', valor: `${espaciosDisponibles}/${capacidadTotal}`, label: 'Espacios disponibles' },
-                            ].map(m => (
-                                <div key={m.label} className="metrica-card">
-                                    <div className="metrica-icono">{m.icono}</div>
-                                    <div className="metrica-info">
-                                        <span className="metrica-valor">{m.valor}</span>
-                                        <span className="metrica-label">{m.label}</span>
-                                    </div>
+                            <div className="metrica-card">
+                                <div className="metrica-icono">🚗</div>
+                                <div className="metrica-info">
+                                    <span className="metrica-valor">{metricas.vehiculosActivos}</span>
+                                    <span className="metrica-label">Vehículos activos</span>
                                 </div>
-                            ))}
+                            </div>
+                            <div className="metrica-card">
+                                <div className="metrica-icono">📅</div>
+                                <div className="metrica-info">
+                                    <span className="metrica-valor">{metricas.ingresosHoy}</span>
+                                    <span className="metrica-label">Ingresos hoy</span>
+                                </div>
+                            </div>
+                            <div className="metrica-card">
+                                <div className="metrica-icono">💰</div>
+                                <div className="metrica-info">
+                                    <span className="metrica-valor">${Number(metricas.totalRecaudadoHoy).toLocaleString()}</span>
+                                    <span className="metrica-label">Recaudado hoy</span>
+                                </div>
+                            </div>
+                            <div className="metrica-card">
+                                <div className="metrica-icono">🅿️</div>
+                                <div className="metrica-info">
+                                    <span className="metrica-valor">{espaciosDisponibles}/{capacidadTotal}</span>
+                                    <span className="metrica-label">Espacios disponibles</span>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="widget-grid">
-                            {/* VEHÍCULOS ACTIVOS */}
+                            {/* WIDGET: VEHÍCULOS ACTIVOS */}
                             <div className="widget-card" style={{ gridColumn: 'span 2' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, flexWrap: 'wrap', gap: 8 }}>
                                     <h3 style={{ margin: 0 }}>Vehículos en el Parqueadero</h3>
@@ -142,7 +154,9 @@ function AdminDashboard() {
                                     <div className="table-wrapper">
                                         <table className="admin-table">
                                             <thead>
-                                                <tr><th>Placa</th><th>Tipo</th><th>Ingreso</th><th>Acción</th></tr>
+                                                <tr>
+                                                    <th>Placa</th><th>Tipo</th><th>Ingreso</th><th>Acción</th>
+                                                </tr>
                                             </thead>
                                             <tbody>
                                                 {ingresosActivos.map(ingreso => (
@@ -151,8 +165,7 @@ function AdminDashboard() {
                                                         <td>{ingreso.vehiculo.tipoVehiculo}</td>
                                                         <td>{new Date(ingreso.fechaEntrada).toLocaleTimeString()}</td>
                                                         <td>
-                                                            <button
-                                                                className="btn-action-exit"
+                                                            <button className="btn-action-exit"
                                                                 onClick={() => abrirModalCobro(ingreso)}>
                                                                 Registrar Salida
                                                             </button>
@@ -165,7 +178,7 @@ function AdminDashboard() {
                                 )}
                             </div>
 
-                            {/* TARIFAS */}
+                            {/* WIDGET: TARIFAS */}
                             {parqueaderos.map(p => (
                                 <div key={p.id} className="widget-card">
                                     <h3>Tarifas — {p.nombre}</h3>
@@ -185,18 +198,8 @@ function AdminDashboard() {
                                                         onChange={e => setTarifaEdicion({ ...tarifaEdicion, tarifaMoto: e.target.value })} />
                                                 </div>
                                                 <div className="tarifa-actions" style={{ marginTop: 10 }}>
-                                                    <button
-                                                        className="btn-save"
-                                                        onClick={() => handleGuardarTarifas(p.id)}
-                                                        disabled={guardandoTarifas}>
-                                                        {guardandoTarifas ? '⏳ Guardando...' : '💾 Guardar'}
-                                                    </button>
-                                                    <button
-                                                        className="btn-cancel"
-                                                        onClick={() => setEditandoParqueadero(null)}
-                                                        disabled={guardandoTarifas}>
-                                                        ✖ Cancelar
-                                                    </button>
+                                                    <button className="btn-save" onClick={() => handleGuardarTarifas(p.id)}>💾 Guardar</button>
+                                                    <button className="btn-cancel" onClick={() => setEditandoParqueadero(null)}>✖ Cancelar</button>
                                                 </div>
                                             </>
                                         ) : (
@@ -236,8 +239,7 @@ function AdminDashboard() {
                             <div className="form-group">
                                 <label>Método de Pago</label>
                                 <select className="full-select" value={metodoPago}
-                                    onChange={e => setMetodoPago(e.target.value)}
-                                    disabled={procesandoPago}>
+                                    onChange={e => setMetodoPago(e.target.value)}>
                                     <option value="EFECTIVO">Efectivo</option>
                                     <option value="TARJETA_DEBITO">Tarjeta Débito</option>
                                     <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
@@ -246,13 +248,8 @@ function AdminDashboard() {
                             </div>
                             <div className="form-actions">
                                 <button type="button" className="btn-secondary"
-                                    onClick={() => setMostrarModalPago(false)}
-                                    disabled={procesandoPago}>
-                                    Cancelar
-                                </button>
-                                <button type="submit" className="btn-primary" disabled={procesandoPago}>
-                                    {procesandoPago ? '⏳ Procesando...' : 'Confirmar y Cobrar'}
-                                </button>
+                                    onClick={() => setMostrarModalPago(false)}>Cancelar</button>
+                                <button type="submit" className="btn-primary">Confirmar y Cobrar</button>
                             </div>
                         </form>
                     </div>

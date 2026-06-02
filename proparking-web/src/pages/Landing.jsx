@@ -10,11 +10,19 @@ function Landing() {
     useEffect(() => {
         listarParqueaderosPublico()
             .then(setParqueaderos)
-            .catch(() => { });
+            .catch(() => {});
     }, []);
 
     return (
         <div className="landing-container">
+            <header className="landing-header">
+                <div className="landing-logo">ProParking</div>
+                <nav className="landing-nav">
+                    <Link to="/login"    className="btn-outline">Iniciar Sesión</Link>
+                    <Link to="/register" className="btn-solid">Registrarse</Link>
+                </nav>
+            </header>
+
             <main className="landing-hero">
                 <h1>Tu parqueadero, <br /> más inteligente y seguro</h1>
                 <p>
@@ -43,13 +51,10 @@ function Landing() {
                     <p style={{ textAlign: 'center', color: '#64748b', marginBottom: 28 }}>
                         Encuentra el parqueadero más cercano a ti en Bogotá
                     </p>
-                    <div style={{
-                        height: 450, borderRadius: 12, overflow: 'hidden',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                    }}>
+                    <div style={{ height: 450, borderRadius: 12, overflow: 'hidden',
+                                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                         <MapaParqueaderos parqueaderos={parqueaderos} modoRegistro={false} />
                     </div>
-                    {/* Leyenda */}
                     <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 16 }}>
                         <span style={{ fontSize: 13, color: '#475569' }}>
                             <span style={{ color: '#16a34a', fontWeight: 700 }}>● </span>
