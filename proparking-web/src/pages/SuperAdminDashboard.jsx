@@ -13,7 +13,7 @@ const parqueaderoVacio = { nombre: '', direccion: '', capacidadTotal: '', tarifa
 
 function SuperAdminDashboard() {
     const navigate = useNavigate();
-    const { usuario } = useAuth();
+    const { usuario, logout } = useAuth();
 
     const [parqueaderos, setParqueaderos] = useState([]);
     const [usuarios, setUsuarios]         = useState([]);
@@ -27,13 +27,13 @@ function SuperAdminDashboard() {
     const [filtroEmail, setFiltroEmail]   = useState('');
 
     // Modal crear/editar parqueadero
-    const [mostrarModal, setMostrarModal]               = useState(false);
-    const [parqueaderoEditando, setParqueaderoEditando] = useState(null);
-    const [formParqueadero, setFormParqueadero]         = useState(parqueaderoVacio);
+    const [mostrarModal, setMostrarModal]         = useState(false);
+    const [parqueaderoEditando, setParqueaderoEditando] = useState(null); // null = creando
+    const [formParqueadero, setFormParqueadero]   = useState(parqueaderoVacio);
 
     // Modal asignar admin
-    const [mostrarModalAsignar, setMostrarModalAsignar]         = useState(false);
-    const [usuarioSeleccionado, setUsuarioSeleccionado]         = useState(null);
+    const [mostrarModalAsignar, setMostrarModalAsignar]   = useState(false);
+    const [usuarioSeleccionado, setUsuarioSeleccionado]   = useState(null);
     const [parqueaderoSeleccionado, setParqueaderoSeleccionado] = useState('');
 
     const cargarDatos = async () => {
@@ -75,6 +75,8 @@ function SuperAdminDashboard() {
         setExito(msg);
         setTimeout(() => setExito(''), 3000);
     };
+
+    const handleLogout = () => { logout(); navigate('/login'); };
 
     // --- Abrir modal crear ---
     const abrirModalCrear = () => {
@@ -175,9 +177,20 @@ function SuperAdminDashboard() {
 
     return (
         <div className="dashboard-layout">
-            <main className="dashboard-content">
-                <h2>Panel Super Admin</h2>
+            <nav className="navbar">
+                <div className="navbar-brand">
+                    <h1>ProParking <span className="admin-tag" style={{ backgroundColor: '#7c3aed' }}>Super Admin</span></h1>
+                </div>
+                <div className="navbar-user">
+                    <span>Hola, <strong>{usuario?.nombre}</strong></span>
+                    <button onClick={() => navigate('/reportes')} className="btn-reportes">
+                        📊 Reportes
+                    </button>
+                    <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+                </div>
+            </nav>
 
+            <main className="dashboard-content">
                 <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
                     {['parqueaderos', 'usuarios', 'logs'].map(t => (
                         <button key={t} onClick={() => setTab(t)} style={{

@@ -51,9 +51,15 @@ function Reportes() {
             .finally(() => setCargando(false));
     }, [parqueaderoId]);
 
-    const handleLogout = async() => {
-        await logout();
-        navigate('/login');
+    const handleLogout = () => { logout(); navigate('/login'); };
+
+    // Ruta de regreso según el rol del usuario
+    const handleVolver = () => {
+        if (usuario?.rol === 'SUPER_ADMIN') {
+            navigate('/superadmin-dashboard');
+        } else {
+            navigate('/admin-dashboard');
+        }
     };
 
     const handleDescargarPdf = async () => {
@@ -84,11 +90,13 @@ function Reportes() {
         <div className="dashboard-layout">
             <nav className="navbar">
                 <div className="navbar-brand">
-                    <h1>ProParking <span className="admin-tag">Admin</span></h1>
+                    <h1>ProParking <span className="admin-tag">
+                        {usuario?.rol === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin'}
+                    </span></h1>
                 </div>
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
-                    <button onClick={() => navigate('/admin-dashboard')} className="btn-logout"
+                    <button onClick={handleVolver} className="btn-logout"
                         style={{ backgroundColor: '#e2e8f0', color: '#475569', marginRight: 8 }}>
                         ← Volver
                     </button>
