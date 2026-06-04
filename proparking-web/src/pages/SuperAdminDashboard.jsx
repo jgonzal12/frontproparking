@@ -183,6 +183,10 @@ function SuperAdminDashboard() {
                 </div>
                 <div className="navbar-user">
                     <span>Hola, <strong>{usuario?.nombre}</strong></span>
+                    <button onClick={() => navigate('/perfil')} className="btn-logout"
+                        style={{ backgroundColor: '#e2e8f0', color: '#475569', marginRight: 4 }}>
+                        👤 Mi Perfil
+                    </button>
                     <button onClick={() => navigate('/reportes')} className="btn-reportes">
                         📊 Reportes
                     </button>

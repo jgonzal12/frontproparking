@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Reportes from './pages/Reportes';
+import Perfil from './pages/Perfil';
 import RecuperarPassword from './pages/RecuperarPassword';
 import RestablecerPassword from './pages/RestablecerPassword';
 
@@ -37,9 +38,14 @@ function App() {
                         <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} />
                     </Route>
 
-                    {/* Reportes accesible para ADMIN y SUPER_ADMIN */}
+                    {/* Reportes: ADMIN y SUPER_ADMIN */}
                     <Route element={<PrivateRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']} />}>
                         <Route path="/reportes" element={<Reportes />} />
+                    </Route>
+
+                    {/* Perfil: todos los roles autenticados */}
+                    <Route element={<PrivateRoute allowedRoles={['CLIENTE', 'ADMIN', 'SUPER_ADMIN']} />}>
+                        <Route path="/perfil" element={<Perfil />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,235 +1,263 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { actualizarPerfil, cambiarPassword } from '../services/usuarioService';
-import '../styles/Perfil.css';
+import api from '../api/axios';
+import '../styles/Dashboard.css';
 
-const Perfil = () => {
+function Perfil() {
     const navigate = useNavigate();
-    const { usuario, actualizarUsuario, logout } = useAuth();
+    const { usuario, logout, login } = useAuth();
 
-    // ── Estado formulario perfil ──────────────────────────────
-    const [formEmail, setFormEmail] = useState('');
-    const [mensajePerfil, setMensajePerfil] = useState({ texto: '', tipo: '' });
-    const [loadingPerfil, setLoadingPerfil]  = useState(false);
-
-    // ── Estado formulario contraseña ──────────────────────────
-    const [formPass, setFormPass] = useState({
-        passwordActual: '',
-        nuevaPassword:  '',
-        confirmar:      '',
-    });
-    const [mensajePass, setMensajePass] = useState({ texto: '', tipo: '' });
-    const [loadingPass, setLoadingPass]  = useState(false);
-    const [mostrarPass, setMostrarPass]  = useState(false);
-
-    useEffect(() => {
-        if (usuario) {
-            setFormEmail(usuario.email || '');
-        }
-    }, [usuario]);
-
-    // ── Submit actualizar email ───────────────────────────────
-    const handleSubmitPerfil = async (e) => {
-        e.preventDefault();
-        setMensajePerfil({ texto: '', tipo: '' });
-        setLoadingPerfil(true);
-        try {
-            await actualizarPerfil({ email: formEmail });
-            actualizarUsuario({ email: formEmail });
-            setMensajePerfil({ texto: 'Correo actualizado correctamente.', tipo: 'success' });
-        } catch (error) {
-            setMensajePerfil({
-                texto: error.response?.data?.error
-                    || error.response?.data?.message
-                    || 'Error al actualizar el perfil.',
-                tipo: 'error',
-            });
-        } finally {
-            setLoadingPerfil(false);
-        }
+    // Detectar de dónde vino el usuario para el botón Volver
+    const rutaVolver = () => {
+        if (usuario?.rol === 'SUPER_ADMIN') return '/superadmin-dashboard';
+        if (usuario?.rol === 'ADMIN') return '/admin-dashboard';
+        return '/dashboard';
     };
 
-    // ── Submit cambiar contraseña ─────────────────────────────
-    const handleSubmitPassword = async (e) => {
-        e.preventDefault();
-        setMensajePass({ texto: '', tipo: '' });
+    // Estado del formulario — inicializado con datos actuales
+    const [editando, setEditando]       = useState(false);
+    const [nombre, setNombre]           = useState(usuario?.nombre || '');
+    const [apellido, setApellido]       = useState(usuario?.apellido || '');
+    const [cargando, setCargando]       = useState(false);
+    const [error, setError]             = useState('');
+    const [exito, setExito]             = useState('');
 
-        if (formPass.nuevaPassword !== formPass.confirmar) {
-            setMensajePass({ texto: 'Las contraseñas nuevas no coinciden.', tipo: 'error' });
+    // Estado para cambio de contraseña
+    const [cambioPass, setCambioPass]           = useState(false);
+    const [passwordActual, setPasswordActual]   = useState('');
+    const [nuevaPassword, setNuevaPassword]     = useState('');
+    const [confirmarPass, setConfirmarPass]     = useState('');
+    const [cargandoPass, setCargandoPass]       = useState(false);
+    const [errorPass, setErrorPass]             = useState('');
+    const [exitoPass, setExitoPass]             = useState('');
+
+    const handleLogout = () => { logout(); navigate('/login'); };
+
+    // --- Guardar datos del perfil ---
+    const handleGuardarPerfil = async (e) => {
+        e.preventDefault();
+        setError('');
+        setExito('');
+        if (!nombre.trim() || !apellido.trim()) {
+            setError('El nombre y apellido son obligatorios.');
             return;
         }
-        if (formPass.nuevaPassword.length < 8) {
-            setMensajePass({ texto: 'La nueva contraseña debe tener mínimo 8 caracteres.', tipo: 'error' });
+        setCargando(true);
+        try {
+            const response = await api.put('/usuario/perfil', { nombre: nombre.trim(), apellido: apellido.trim() });
+            // Actualizar AuthContext con los nuevos datos
+            login({ ...usuario, nombre: response.data.nombre, apellido: response.data.apellido });
+            setExito('Perfil actualizado correctamente.');
+            setEditando(false);
+        } catch (err) {
+            setError(err.response?.data?.error || 'Error al actualizar el perfil.');
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    // --- Cambiar contraseña ---
+    const handleCambiarPassword = async (e) => {
+        e.preventDefault();
+        setErrorPass('');
+        setExitoPass('');
+        if (nuevaPassword !== confirmarPass) {
+            setErrorPass('Las contraseñas nuevas no coinciden.');
             return;
         }
-
-        setLoadingPass(true);
+        if (nuevaPassword.length < 8) {
+            setErrorPass('La nueva contraseña debe tener mínimo 8 caracteres.');
+            return;
+        }
+        setCargandoPass(true);
         try {
-            await cambiarPassword({
-                passwordActual: formPass.passwordActual,
-                nuevaPassword:  formPass.nuevaPassword,
-            });
-            setMensajePass({ texto: 'Contraseña actualizada correctamente.', tipo: 'success' });
-            setFormPass({ passwordActual: '', nuevaPassword: '', confirmar: '' });
-        } catch (error) {
-            setMensajePass({
-                texto: error.response?.data?.error
-                    || error.response?.data?.message
-                    || 'Error al cambiar la contraseña.',
-                tipo: 'error',
-            });
+            await api.put('/usuario/cambiar-password', { passwordActual, nuevaPassword });
+            setExitoPass('Contraseña actualizada correctamente.');
+            setPasswordActual('');
+            setNuevaPassword('');
+            setConfirmarPass('');
+            setCambioPass(false);
+        } catch (err) {
+            setErrorPass(err.response?.data?.error || 'Error al cambiar la contraseña.');
         } finally {
-            setLoadingPass(false);
+            setCargandoPass(false);
         }
     };
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
+    const cancelarEdicion = () => {
+        setNombre(usuario?.nombre || '');
+        setApellido(usuario?.apellido || '');
+        setError('');
+        setEditando(false);
     };
 
-    const handleVolver = () => {
-        if (usuario?.rol === 'SUPER_ADMIN') navigate('/superadmin-dashboard');
-        else if (usuario?.rol === 'ADMIN')  navigate('/admin-dashboard');
-        else                                navigate('/dashboard');
+    const cancelarCambioPass = () => {
+        setPasswordActual('');
+        setNuevaPassword('');
+        setConfirmarPass('');
+        setErrorPass('');
+        setCambioPass(false);
+    };
+
+    const rolLabel = {
+        SUPER_ADMIN: 'Super Administrador',
+        ADMIN: 'Administrador',
+        CLIENTE: 'Cliente',
     };
 
     return (
-        <div className="perfil-container">
-            <div className="perfil-card">
-
-                {/* Avatar con iniciales */}
-                <div className="perfil-avatar">
-                    {usuario?.nombre?.charAt(0).toUpperCase()}
-                    {usuario?.apellido?.charAt(0).toUpperCase()}
+        <div className="dashboard-layout">
+            <nav className="navbar">
+                <div className="navbar-brand">
+                    <h1>ProParking</h1>
                 </div>
-
-                <h2>Mi Perfil</h2>
-                <p className="perfil-subtitle">Gestiona tu información de cuenta</p>
-
-                {/* Datos de solo lectura */}
-                <div className="perfil-info-readonly">
-                    <div className="perfil-info-row">
-                        <span className="perfil-info-label">Nombre completo</span>
-                        <span className="perfil-info-value">
-                            {usuario?.nombre || '—'}{usuario?.apellido ? ` ${usuario.apellido}` : ''}
-                        </span>
-                    </div>
-                    <div className="perfil-info-row">
-                        <span className="perfil-info-label">Rol</span>
-                        <span className={`perfil-rol perfil-rol--${(usuario?.rol || '').toLowerCase()}`}>
-                            {usuario?.rol || '—'}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="perfil-divider" />
-
-                {/* ── Sección: actualizar email ──────────────────── */}
-                <p className="perfil-section-title">Correo electrónico</p>
-
-                {mensajePerfil.texto && (
-                    <div className={`alert alert-${mensajePerfil.tipo}`}>
-                        {mensajePerfil.texto}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmitPerfil} className="perfil-form">
-                    <div className="form-group">
-                        <label htmlFor="email">Correo electrónico</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={formEmail}
-                            onChange={(e) => setFormEmail(e.target.value)}
-                            required
-                            placeholder="tu@correo.com"
-                        />
-                    </div>
-                    <button type="submit" className="btn-guardar" disabled={loadingPerfil}>
-                        {loadingPerfil ? 'Guardando...' : 'Actualizar correo'}
+                <div className="navbar-user">
+                    <span>Hola, <strong>{usuario?.nombre}</strong></span>
+                    <span className="user-role">{usuario?.rol}</span>
+                    <button onClick={() => navigate(rutaVolver())} className="btn-logout"
+                        style={{ backgroundColor: '#e2e8f0', color: '#475569', marginRight: 8 }}>
+                        ← Volver
                     </button>
-                </form>
+                    <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+                </div>
+            </nav>
 
-                <div className="perfil-divider" />
+            <main className="dashboard-content" style={{ maxWidth: 640 }}>
+                <h2 style={{ marginBottom: 24 }}>Mi Perfil</h2>
 
-                {/* ── Sección: cambiar contraseña ────────────────── */}
-                <button
-                    type="button"
-                    className="perfil-toggle-pass"
-                    onClick={() => {
-                        setMostrarPass(!mostrarPass);
-                        setMensajePass({ texto: '', tipo: '' });
-                        setFormPass({ passwordActual: '', nuevaPassword: '', confirmar: '' });
-                    }}
-                >
-                    {mostrarPass ? '▲ Ocultar' : '🔒 Cambiar contraseña'}
-                </button>
-
-                {mostrarPass && (
-                    <>
-                        {mensajePass.texto && (
-                            <div className={`alert alert-${mensajePass.tipo}`} style={{ marginTop: 12 }}>
-                                {mensajePass.texto}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmitPassword} className="perfil-form" style={{ marginTop: 14 }}>
-                            <div className="form-group">
-                                <label htmlFor="passwordActual">Contraseña actual</label>
-                                <input
-                                    type="password"
-                                    id="passwordActual"
-                                    value={formPass.passwordActual}
-                                    onChange={(e) => setFormPass({ ...formPass, passwordActual: e.target.value })}
-                                    required
-                                    placeholder="••••••••"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="nuevaPassword">Nueva contraseña</label>
-                                <input
-                                    type="password"
-                                    id="nuevaPassword"
-                                    value={formPass.nuevaPassword}
-                                    onChange={(e) => setFormPass({ ...formPass, nuevaPassword: e.target.value })}
-                                    required
-                                    placeholder="Mínimo 8 caracteres"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="confirmar">Confirmar nueva contraseña</label>
-                                <input
-                                    type="password"
-                                    id="confirmar"
-                                    value={formPass.confirmar}
-                                    onChange={(e) => setFormPass({ ...formPass, confirmar: e.target.value })}
-                                    required
-                                    placeholder="Repite la nueva contraseña"
-                                />
-                            </div>
-                            <button type="submit" className="btn-guardar" disabled={loadingPass}>
-                                {loadingPass ? 'Actualizando...' : 'Cambiar contraseña'}
+                {/* ── Tarjeta de datos personales ── */}
+                <div className="widget-card" style={{ marginBottom: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                        <h3 style={{ margin: 0 }}>Datos Personales</h3>
+                        {!editando && (
+                            <button onClick={() => setEditando(true)} style={{
+                                padding: '7px 16px', backgroundColor: '#eff6ff',
+                                border: '1px solid #93c5fd', color: '#1d4ed8',
+                                borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13
+                            }}>
+                                ✏️ Editar
                             </button>
+                        )}
+                    </div>
+
+                    {exito && <div className="success-msg" style={{ marginBottom: 16 }}>{exito}</div>}
+                    {error  && <div className="error-msg"   style={{ marginBottom: 16 }}>{error}</div>}
+
+                    {editando ? (
+                        <form onSubmit={handleGuardarPerfil}>
+                            <div className="form-group">
+                                <label>Nombre</label>
+                                <input type="text" value={nombre} required
+                                    onChange={e => setNombre(e.target.value)}
+                                    style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box' }} />
+                            </div>
+                            <div className="form-group">
+                                <label>Apellido</label>
+                                <input type="text" value={apellido} required
+                                    onChange={e => setApellido(e.target.value)}
+                                    style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box' }} />
+                            </div>
+                            <div className="form-group">
+                                <label>Correo Electrónico</label>
+                                <input type="email" value={usuario?.email || ''} disabled
+                                    style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 14, backgroundColor: '#f1f5f9', color: '#94a3b8', boxSizing: 'border-box' }} />
+                                <span style={{ fontSize: 11, color: '#94a3b8' }}>El correo no se puede modificar.</span>
+                            </div>
+                            <div className="form-actions">
+                                <button type="button" onClick={cancelarEdicion} style={{
+                                    padding: '9px 20px', borderRadius: 8, border: '1px solid #e2e8f0',
+                                    backgroundColor: 'white', cursor: 'pointer', fontWeight: 600, fontSize: 14
+                                }}>Cancelar</button>
+                                <button type="submit" disabled={cargando} style={{
+                                    padding: '9px 20px', borderRadius: 8, border: 'none',
+                                    backgroundColor: '#1e40af', color: 'white',
+                                    cursor: 'pointer', fontWeight: 600, fontSize: 14,
+                                    opacity: cargando ? 0.6 : 1
+                                }}>{cargando ? 'Guardando...' : 'Guardar cambios'}</button>
+                            </div>
                         </form>
-                    </>
-                )}
-
-                <div className="perfil-divider" />
-
-                {/* Acciones secundarias */}
-                <div className="perfil-actions">
-                    <button onClick={handleVolver} className="btn-volver">
-                        ← Volver al dashboard
-                    </button>
-                    <button onClick={handleLogout} className="btn-cerrar-sesion">
-                        Cerrar sesión
-                    </button>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {[
+                                { label: 'Nombre',   valor: usuario?.nombre   || '—' },
+                                { label: 'Apellido', valor: usuario?.apellido || '—' },
+                                { label: 'Correo',   valor: usuario?.email    || '—' },
+                                { label: 'Rol',      valor: rolLabel[usuario?.rol] || usuario?.rol || '—' },
+                            ].map(({ label, valor }) => (
+                                <div key={label} style={{
+                                    display: 'flex', justifyContent: 'space-between',
+                                    padding: '10px 14px', backgroundColor: '#f8fafc',
+                                    borderRadius: 8, fontSize: 14
+                                }}>
+                                    <span style={{ color: '#64748b', fontWeight: 600 }}>{label}</span>
+                                    <span style={{ color: '#1e293b' }}>{valor}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-            </div>
+
+                {/* ── Tarjeta cambio de contraseña ── */}
+                <div className="widget-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: cambioPass ? 20 : 0 }}>
+                        <h3 style={{ margin: 0 }}>Cambiar Contraseña</h3>
+                        {!cambioPass && (
+                            <button onClick={() => setCambioPass(true)} style={{
+                                padding: '7px 16px', backgroundColor: '#fef3c7',
+                                border: '1px solid #fcd34d', color: '#92400e',
+                                borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13
+                            }}>
+                                🔑 Cambiar
+                            </button>
+                        )}
+                    </div>
+
+                    {cambioPass && (
+                        <>
+                            {exitoPass && <div className="success-msg" style={{ marginBottom: 16 }}>{exitoPass}</div>}
+                            {errorPass  && <div className="error-msg"   style={{ marginBottom: 16 }}>{errorPass}</div>}
+                            <form onSubmit={handleCambiarPassword}>
+                                <div className="form-group">
+                                    <label>Contraseña actual</label>
+                                    <input type="password" required value={passwordActual}
+                                        onChange={e => setPasswordActual(e.target.value)}
+                                        placeholder="••••••••"
+                                        style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box' }} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Nueva contraseña</label>
+                                    <input type="password" required value={nuevaPassword}
+                                        onChange={e => setNuevaPassword(e.target.value)}
+                                        placeholder="Mínimo 8 caracteres"
+                                        style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box' }} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Confirmar nueva contraseña</label>
+                                    <input type="password" required value={confirmarPass}
+                                        onChange={e => setConfirmarPass(e.target.value)}
+                                        placeholder="Repite la contraseña"
+                                        style={{ width: '100%', padding: 10, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 14, boxSizing: 'border-box' }} />
+                                </div>
+                                <div className="form-actions">
+                                    <button type="button" onClick={cancelarCambioPass} style={{
+                                        padding: '9px 20px', borderRadius: 8, border: '1px solid #e2e8f0',
+                                        backgroundColor: 'white', cursor: 'pointer', fontWeight: 600, fontSize: 14
+                                    }}>Cancelar</button>
+                                    <button type="submit" disabled={cargandoPass} style={{
+                                        padding: '9px 20px', borderRadius: 8, border: 'none',
+                                        backgroundColor: '#1e40af', color: 'white',
+                                        cursor: 'pointer', fontWeight: 600, fontSize: 14,
+                                        opacity: cargandoPass ? 0.6 : 1
+                                    }}>{cargandoPass ? 'Guardando...' : 'Actualizar contraseña'}</button>
+                                </div>
+                            </form>
+                        </>
+                    )}
+                </div>
+            </main>
         </div>
     );
-};
+}
 
 export default Perfil;
